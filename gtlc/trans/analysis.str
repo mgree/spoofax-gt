@@ -10,7 +10,7 @@ imports
 
 rules // Analysis
 
-  editor-analyze = stx-editor-analyze(desugar-all|"static-semantics", "programOK")
+  editor-analyze = stx-editor-elaborate(desugar-all|"static-semantics", "insertCasts")
 
 rules // Editor Services
 
