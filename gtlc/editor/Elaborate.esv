@@ -1,0 +1,8 @@
+module Elaborate
+
+menus
+
+  menu: "Elaborate" (openeditor)
+
+    action: "Elaborate source AST" = menu-source-elaborate (source)
+    action: "Elaborate analyzed AST" = menu-analyzed-elaborate
