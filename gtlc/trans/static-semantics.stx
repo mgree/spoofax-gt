@@ -1,0 +1,122 @@
+module static-semantics
+
+signature
+  sorts ID = string
+  
+  sorts Program constructors
+    Expr : Expr -> Program
+  
+  sorts Expr constructors
+    Var : ID -> Expr
+    True : Expr
+    False : Expr
+    If : Expr * Expr * Expr -> Expr
+    App : Expr * Expr -> Expr
+	Lam : ID * Type * Expr -> Expr
+	Ascribe : Expr * Type -> Expr
+	Cast : Expr * Type * Type -> Expr
+	
+  sorts Type constructors
+	Bool : Type
+	Dyn : Type
+	Fun : Type * Type -> Type
+	
+  namespaces
+    Var : string
+	
+  relations  
+    typeOfVar : occurrence -> Type
+
+  name-resolution
+    labels P
+    
+    resolve Var filter pathMatch[P*]
+    	        min pathLt[$ < P]
+
+rules
+
+  programOK : Program
+  
+  programOK(Expr(e)) :- {e'}
+    insertCasts(Expr(e)) == Expr(e').
+
+  insertCasts : Program -> Program
+  
+  insertCasts(Expr(e)) = Expr(e') :- {s T}
+    new s,
+    typeOfExpr(s, e) == (e', T).
+
+  typeOfExpr : scope * Expr -> Expr * Type
+
+  typeOfExpr(s, Var(x)) = (Var(x), T) :- {p d}
+    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  
+  typeOfExpr(s, True()) = (True(), Bool()).
+  
+  typeOfExpr(s, False()) = (False(), Bool()).
+  
+  typeOfExpr(s, If(e1,e2,e3)) = 
+    (If(e1',cast(e2',T2,T),cast(e3',T3,T)), T) 
+    :- {T1}
+  	  typeOfExpr(s, e1) == (e1', T1),
+  	  consistent(T1, Bool()),
+  	  typeOfExpr(s, e2) == (e2', T2),
+  	  typeOfExpr(s, e3) == (e3', T3),
+  	  meet(T2, T3) == T.
+
+  typeOfExpr(s, App(e1,e2)) = (e, T) :- {e1' e2' T1 T2}
+    typeOfExpr(s, e1) == (e1', T1),
+    typeOfExpr(s, e2) == (e2', T2),
+    applicationYields(e1', e2', T1, T2) == (e, T).
+
+  typeOfExpr(s, Lam(x,T1,e)) = 
+    (Lam(x,T1,e'), Fun(T1,T2)) :- {s_lam}
+    new s_lam,
+    typeOfExpr(s_lam,e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+    
+  typeOfExpr(s, Ascribe(e,T)) = (e',T) :-
+    typeOfExpr(s, e) == (e',T).
+
+  typeOfExpr(s, Cast(e,Tsrc,Ttgt)) = (Cast(e',Tsrc,Tgt),Ttgt) :-
+    typeOfExpr(s, e) == (e',Tsrc),
+    consistent(Tsrc, Ttgt).
+
+ 
+rules
+
+  consistent : Type * Type
+  
+  consistent(Bool(), Bool()).
+  
+  consistent(T, Dyn()).
+  
+  consistent(Dyn(), T).
+  
+  consistent(Fun(T11, T12), Fun(T21, T22)) :-
+    consistent(T11, T21),
+    consistent(T12, T22).
+    
+  applicationYields : Expr * Expr * Type * Type -> Expr * Type
+  
+  applicationYields(e1, e2, Dyn(), T) 
+    = (App(Cast(e1, Dyn(), Fun(T,Dyn)), e2), Dyn()).
+      
+  applicationYields(e1, e2, Fun(T1, T2), T1') = 
+    (App(e1, cast(e2, T1', T1)), T2) :-
+    consistent(T1', T1).
+    
+  meet : Type * Type -> Type
+  
+  meet(Dyn(), T) = Dyn().
+  meet(T, Dyn()) = Dyn().
+  meet(Bool(), Bool()) = Bool().
+  meet(Fun(T11,T12),Fun(T21,T22)) = Fun(T1, T2) :-
+    meet(T11,T21) == T1,
+    meet(T12,T22) == T2.
+    
+  cast : Expr * Type * Type -> Expr
+  
+  cast(e, T, T) = e.
+  cast(e, T1, T2) = Cast(e, T1, T2).

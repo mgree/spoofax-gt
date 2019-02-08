@@ -1,0 +1,14 @@
+Module(
+  "static-semantics"
+, [ Signature(
+      [ Sorts([SortDecl("Start")])
+      , Constructors([OpDecl("Empty", ConstOp(SimpleSort("Start")))])
+      ]
+    )
+  , Rules(
+      [ CDecl(InductiveC(), "programOK", SimpleType([SimpleSort("Start")]))
+      , AxiomRule(C("programOK", [Op("Empty", [])]))
+      ]
+    )
+  ]
+)

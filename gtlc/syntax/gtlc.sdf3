@@ -1,0 +1,54 @@
+module gtlc
+
+imports
+  
+  Common
+
+context-free start-symbols
+  
+  Program
+
+context-free syntax
+    
+  Program.Expr = Expr
+    
+  Expr.Var = <<ID>>
+  
+  Expr.True = <true>
+  
+  Expr.False = <false>
+  
+  Expr.If = <if <Expr> then <Expr> else <Expr>>
+  
+  Expr.App = Expr Expr { left }
+    
+  Expr.Lam = <\\<ID> : <Type>. <Expr>>
+
+  Expr.Lam = <\\<ID>. <Expr>>
+  
+  Expr.Ascribe = <<Expr> : <Type>>
+  
+  Expr.Cast = <<Expr> : <Type> =\> <Type>>
+  
+  Expr = <(<Expr>)> { bracket }
+  
+  Type.Bool = <bool>
+  
+  Type.Dyn = <?>
+  
+  Type.Fun = <<Type> -\> <Type>> { right }
+  
+  Type = <(<Type>)> { bracket }
+  
+context-free priorities
+
+    Expr.App
+  > Expr.Cast
+  > Expr.Lam
+  > Expr.If
+  > Expr.Ascribe
+  
+template options
+
+  ID = keyword { reject }
+  keyword -/- [a-zA-Z0-9]

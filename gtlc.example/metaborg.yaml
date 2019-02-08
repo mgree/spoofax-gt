@@ -1,0 +1,10 @@
+---
+id: org.example:gtlc.example:0.1.0-SNAPSHOT
+name: gtlc
+dependencies:
+  compile:
+  - org.example:gtlc:0.1.0-SNAPSHOT
+debug:
+  typesmart: false
+build:
+  useBuildSystemSpec: true
