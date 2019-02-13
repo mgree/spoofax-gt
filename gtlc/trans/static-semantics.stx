@@ -36,7 +36,7 @@ rules
     new s,
     typeOfExprC(s, e) == T.
 
-  programOK(Elaborate(e1, e2)) :- {s1 s2 T}
+  programOK(Elaborate(e1, AscrC(e2, T))) :- {s1 s2}
     new s1, new s2,
     typeOfExpr(s1, e1) == (e2, T),
     typeOfExprC(s2, e2) == T.
@@ -133,11 +133,11 @@ rules // programs
 
   insertCasts : Program -> Program
   
-  insertCasts(Expr(e1)) = Elaborate(e1, e2) :- {s T}
+  insertCasts(Expr(e1)) = Elaborate(e1, AscrC(e2, T)) :- {s}
     new s,
     typeOfExpr(s, e1) == (e2, T).
   
-  insertCasts(Elaborate(e1, _)) = Elaborate(e1, e2) :- {s T}
+  insertCasts(Elaborate(e1, _)) = Elaborate(e1, AscrC(e2, T)) :- {s}
     new s,
     typeOfExpr(s, e1) == (e2, T).
 
