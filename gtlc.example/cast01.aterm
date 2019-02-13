@@ -1,6 +1,0 @@
-Expr(
-  App(
-    Lam("x", If(Var("x"), False(), True()))
-  , True()
-  )
-)
