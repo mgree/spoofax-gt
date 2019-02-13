@@ -8,5 +8,4 @@ elaborate as
 (\x : ?. if x then
   false
 else
-  true) ((\y : ?. y) : ? -> ? => ?) : bool
-  
+  true) ((\y : ?. y) : ? -> ? => ?)

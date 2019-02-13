@@ -1,5 +1,5 @@
-\x : bool. x
+(\x : bool. x) true
 
 elaborate as
 
-\x : bool. x
+(\x : bool. x) true : bool

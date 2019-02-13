@@ -1,1 +1,1 @@
-(\x:bool. x)
+(\x:bool. x) true
