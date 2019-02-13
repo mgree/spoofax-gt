@@ -7,19 +7,19 @@ signature
     Expr : Expr -> Program
   
   sorts Expr constructors
-    Var : ID -> Expr
-    True : Expr
+    Var   : ID -> Expr
+    True  : Expr
     False : Expr
-    If : Expr * Expr * Expr -> Expr
-    App : Expr * Expr -> Expr
-	Lam : ID * Type * Expr -> Expr
-	Ascribe : Expr * Type -> Expr
-	Cast : Expr * Type * Type -> Expr
+    If    : Expr * Expr * Expr -> Expr
+    App   : Expr * Expr -> Expr
+	Lam   : ID * Type * Expr -> Expr
+	Ascr  : Expr * Type -> Expr
+	Cast  : Expr * Type * Type -> Expr
 	
   sorts Type constructors
 	Bool : Type
-	Dyn : Type
-	Fun : Type * Type -> Type
+	Dyn  : Type
+	Fun  : Type * Type -> Type
 	
   namespaces
     Var : string
@@ -71,7 +71,7 @@ rules
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
     
-  typeOfExpr(s, Ascribe(e,T)) = (e',T) :-
+  typeOfExpr(s, Ascr(e,T)) = (e',T) :-
     typeOfExpr(s, e) == (e',T).
 
   typeOfExpr(s, Cast(e,Tsrc,Ttgt)) = (Cast(e',Tsrc,Tgt),Ttgt) :-

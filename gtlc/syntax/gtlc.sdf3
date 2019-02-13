@@ -1,44 +1,39 @@
 module gtlc
 
-imports
-  
-  Common
+imports Common
 
-context-free start-symbols
-  
-  Program
+context-free start-symbols Program
 
 context-free syntax
     
   Program.Expr = Expr
     
-  Expr.Var = <<ID>>
-  
-  Expr.True = <true>
+sorts Expr context-free syntax
+
+  Expr.True  = <true>
   
   Expr.False = <false>
   
-  Expr.If = <if <Expr> then <Expr> else <Expr>>
-  
-  Expr.App = Expr Expr { left }
+  Expr.If = <
+    if <Expr> then 
+      <Expr> 
+    else 
+      <Expr>
+  >
+ 
+  Expr.App  = <<Expr> <Expr>> { left }
     
-  Expr.Lam = <\\<ID> : <Type>. <Expr>>
-
-  Expr.Lam = <\\<ID>. <Expr>>
+  Expr.Lam  = <\\<ID> : <Type>. <Expr>>
   
-  Expr.Ascribe = <<Expr> : <Type>>
+  Expr.Lam  = <\\<ID>. <Expr>>
+  
+  Expr.Var  = <<ID>>
+  
+  Expr.Ascr = <<Expr> : <Type>>
   
   Expr.Cast = <<Expr> : <Type> =\> <Type>>
   
-  Expr = <(<Expr>)> { bracket }
-  
-  Type.Bool = <bool>
-  
-  Type.Dyn = <?>
-  
-  Type.Fun = <<Type> -\> <Type>> { right }
-  
-  Type = <(<Type>)> { bracket }
+  Expr      = <(<Expr>)> { bracket }
   
 context-free priorities
 
@@ -46,7 +41,17 @@ context-free priorities
   > Expr.Cast
   > Expr.Lam
   > Expr.If
-  > Expr.Ascribe
+  > Expr.Ascr
+  
+sorts Type context-free syntax 
+
+  Type.Bool = <bool>
+  
+  Type.Dyn  = <?>
+  
+  Type.Fun  = [[Type] -> [Type]] { right }
+  
+  Type      = <(<Type>)> { bracket }
   
 template options
 
