@@ -4,8 +4,104 @@ signature
   sorts ID = string
   
   sorts Program constructors
-    Expr : Expr -> Program
+    Expr      : Expr -> Program
+    ExprC     : ExprC -> Program
+    Elaborate : Expr * ExprC -> Program
   
+  sorts Type constructors
+	Bool : Type
+	Dyn  : Type
+	Fun  : Type * Type -> Type  
+	
+signature // core
+  sorts ExprC constructors
+    VarC   : ID -> ExprC
+    TrueC  : ExprC
+    FalseC : ExprC
+    IfC    : ExprC * ExprC * ExprC -> ExprC
+    AppC   : ExprC * ExprC -> ExprC
+	LamC   : ID * Type * ExprC -> ExprC
+	AscrC  : ExprC * Type -> ExprC
+	CastC  : ExprC * Type * Type -> ExprC
+
+rules
+
+  programOK : Program
+  
+  programOK(ExprC(e)) :- {s T}
+    new s,
+    typeOfExprC(s, e) == T.
+
+  programOK(Elaborate(e1, e2)) :- {s T}
+    new s,
+    typeOfExprC(s, e2) == T.
+    
+rules
+
+  typeOfExprC : scope * ExprC -> Type
+
+  typeOfExprC(s, VarC(x)) = T :- {p d}
+    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  
+  typeOfExprC(s, TrueC()) = Bool().
+  
+  typeOfExprC(s, FalseC()) = Bool().
+  
+  typeOfExprC(s, IfC(e1,e2,e3)) = T :- {T1 T2 T3}
+  	typeOfExprC(s, e1) == T1,
+  	consistent(T1, Bool()),
+  	typeOfExprC(s, e2) == T2,
+  	typeOfExprC(s, e3) == T3,
+  	meet(T2, T3) == T.
+
+  typeOfExprC(s, AppC(e1,e2)) = T :- {T1 T2}
+    typeOfExprC(s, e1) == T1,
+    typeOfExprC(s, e2) == T2,
+    applicationYieldsC(T1, T2) == T.
+
+  typeOfExprC(s, LamC(x,T1,e)) = Fun(T1,T2) :- {s_lam}
+    new s_lam,
+    typeOfExprC(s_lam,e) == T2,
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+    
+  typeOfExprC(s, AscrC(e,T)) = T :-
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, CastC(e,T1, T2)) = T :-
+    typeOfExprC(s, e) == T.
+
+rules
+
+  consistentC : Type * Type
+  
+  consistentC(Bool(), Bool()).
+  
+  consistentC(T, Dyn()).
+  
+  consistentC(Dyn(), T).
+  
+  consistentC(Fun(T11, T12), Fun(T21, T22)) :-
+    consistentC(T11, T21),
+    consistentC(T12, T22).
+    
+  applicationYieldsC : Type * Type -> Type
+  
+  applicationYieldsC(Dyn(), T) = Dyn().
+  
+  applicationYieldsC(Fun(T1,T2), T1') = T2 :-
+    consistent(T1, T1').
+    
+  meetC : Type * Type -> Type
+  
+  meetC(Dyn(), T) = Dyn().
+  meetC(T, Dyn()) = Dyn().
+  meetC(Bool(), Bool()) = Bool().
+  meetC(Fun(T11,T12),Fun(T21,T22)) = Fun(T1, T2) :-
+    meetC(T11,T21) == T1,
+    meetC(T12,T22) == T2.
+
+signature // sugar
   sorts Expr constructors
     Var   : ID -> Expr
     True  : Expr
@@ -14,12 +110,6 @@ signature
     App   : Expr * Expr -> Expr
 	Lam   : ID * Type * Expr -> Expr
 	Ascr  : Expr * Type -> Expr
-	Cast  : Expr * Type * Type -> Expr
-	
-  sorts Type constructors
-	Bool : Type
-	Dyn  : Type
-	Fun  : Type * Type -> Type
 	
   namespaces
     Var : string
@@ -33,25 +123,31 @@ signature
     resolve Var filter pathMatch[P*]
     	        min pathLt[$ < P]
 
-rules
+rules // programs
 
   insertCasts : Program -> Program
   
-  insertCasts(Expr(e)) = Expr(e') :- {s T}
+  insertCasts(Expr(e)) = Elaborate(e, e') :- {s T}
     new s,
     typeOfExpr(s, e) == (e', T).
+  
+  insertCasts(Elaborate(e1, e2)) = Elaborate(e1, e') :- {s T}
+    new s,
+    typeOfExpr(s, e1) == (e', T).
 
-  typeOfExpr : scope * Expr -> Expr * Type
+rules // expressions
 
-  typeOfExpr(s, Var(x)) = (Var(x), T) :- {p d}
+  typeOfExpr : scope * Expr -> ExprC * Type
+
+  typeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
     typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
   
-  typeOfExpr(s, True()) = (True(), Bool()).
+  typeOfExpr(s, True()) = (TrueC(), Bool()).
   
-  typeOfExpr(s, False()) = (False(), Bool()).
+  typeOfExpr(s, False()) = (FalseC(), Bool()).
   
   typeOfExpr(s, If(e1,e2,e3)) = 
-    (If(e1',cast(e2',T2,T),cast(e3',T3,T)), T) 
+    (IfC(e1',cast(e2',T2,T),cast(e3',T3,T)), T) 
     :- {T1}
   	  typeOfExpr(s, e1) == (e1', T1),
   	  consistent(T1, Bool()),
@@ -65,7 +161,7 @@ rules
     applicationYields(e1', e2', T1, T2) == (e, T).
 
   typeOfExpr(s, Lam(x,T1,e)) = 
-    (Lam(x,T1,e'), Fun(T1,T2)) :- {s_lam}
+    (LamC(x,T1,e'), Fun(T1,T2)) :- {s_lam}
     new s_lam,
     typeOfExpr(s_lam,e) == (e', T2),
     s_lam -P-> s,
@@ -74,9 +170,9 @@ rules
   typeOfExpr(s, Ascr(e,T)) = (e',T) :-
     typeOfExpr(s, e) == (e',T).
 
-  typeOfExpr(s, Cast(e,Tsrc,Ttgt)) = (Cast(e',Tsrc,Tgt),Ttgt) :-
-    typeOfExpr(s, e) == (e',Tsrc),
-    consistent(Tsrc, Ttgt).
+//  typeOfExpr(s, Cast(e,Tsrc,Ttgt)) = (Cast(e',Tsrc,Tgt),Ttgt) :-
+//    typeOfExpr(s, e) == (e',Tsrc),
+//    consistent(Tsrc, Ttgt).
 
  
 rules
@@ -93,25 +189,28 @@ rules
     consistent(T11, T21),
     consistent(T12, T22).
     
-  applicationYields : Expr * Expr * Type * Type -> Expr * Type
+  applicationYields : ExprC * ExprC * Type * Type -> ExprC * Type
   
   applicationYields(e1, e2, Dyn(), T) 
-    = (App(Cast(e1, Dyn(), Fun(T,Dyn)), e2), Dyn()).
+    = (AppC(CastC(e1, Dyn(), Fun(T,Dyn)), e2), Dyn()).
       
   applicationYields(e1, e2, Fun(T1, T2), T1') = 
-    (App(e1, cast(e2, T1', T1)), T2) :-
+    (AppC(e1, cast(e2, T1', T1)), T2) :-
     consistent(T1', T1).
     
   meet : Type * Type -> Type
   
   meet(Dyn(), T) = Dyn().
+  
   meet(T, Dyn()) = Dyn().
+  
   meet(Bool(), Bool()) = Bool().
+  
   meet(Fun(T11,T12),Fun(T21,T22)) = Fun(T1, T2) :-
     meet(T11,T21) == T1,
     meet(T12,T22) == T2.
     
-  cast : Expr * Type * Type -> Expr
+  cast : ExprC * Type * Type -> ExprC
   
   cast(e, T, T) = e.
-  cast(e, T1, T2) = Cast(e, T1, T2).
+  cast(e, T1, T2) = CastC(e, T1, T2).

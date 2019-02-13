@@ -1,2 +1,12 @@
 module types
 
+sorts Type context-free syntax 
+
+  Type.Bool = <bool>
+  
+  Type.Dyn  = <?>
+  
+  Type.Fun  = [[Type] -> [Type]] { right }
+  
+  Type      = <(<Type>)> { bracket }
+  

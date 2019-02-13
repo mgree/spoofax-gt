@@ -1,0 +1,41 @@
+module gtlc-core
+
+imports Common types
+
+sorts ExprC context-free syntax
+
+  ExprC.TrueC  = <true>
+  
+  ExprC.FalseC = <false>
+  
+  ExprC.IfC = <
+    if <ExprC> then 
+      <ExprC> 
+    else 
+      <ExprC>
+  >
+ 
+  ExprC.AppC  = <<ExprC> <ExprC>> { left }
+    
+  ExprC.LamC  = <\\<ID> : <Type>. <ExprC>>
+    
+  ExprC.VarC  = <<ID>>
+  
+  ExprC.AscrC = <<ExprC> : <Type>>
+  
+  ExprC.CastC = <<ExprC> : <Type> =\> <Type>>
+  
+  ExprC      = <(<ExprC>)> { bracket }
+  
+context-free priorities
+
+    ExprC.AppC
+  > ExprC.CastC
+  > ExprC.LamC
+  > ExprC.IfC
+  > ExprC.AscrC
+  
+template options
+
+  ID = keyword { reject }
+  keyword -/- [a-zA-Z0-9]

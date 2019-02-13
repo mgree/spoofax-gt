@@ -1,57 +1,22 @@
 module gtlc
 
-imports Common
+imports Common gtlc-source gtlc-core types
 
 context-free start-symbols Program
 
-context-free syntax
+sorts Program context-free syntax
     
-  Program.Expr = Expr
-    
-sorts Expr context-free syntax
+  Program.Expr = 
+    <<Expr>>
+  
+  Program.ExprC = 
+    <core <Expr>>
 
-  Expr.True  = <true>
-  
-  Expr.False = <false>
-  
-  Expr.If = <
-    if <Expr> then 
-      <Expr> 
-    else 
-      <Expr>
+  Program.Elaborate = <
+    <Expr>
+    elaborate as
+    <ExprC>
   >
- 
-  Expr.App  = <<Expr> <Expr>> { left }
-    
-  Expr.Lam  = <\\<ID> : <Type>. <Expr>>
-  
-  Expr.Lam  = <\\<ID>. <Expr>>
-  
-  Expr.Var  = <<ID>>
-  
-  Expr.Ascr = <<Expr> : <Type>>
-  
-  Expr.Cast = <<Expr> : <Type> =\> <Type>>
-  
-  Expr      = <(<Expr>)> { bracket }
-  
-context-free priorities
-
-    Expr.App
-  > Expr.Cast
-  > Expr.Lam
-  > Expr.If
-  > Expr.Ascr
-  
-sorts Type context-free syntax 
-
-  Type.Bool = <bool>
-  
-  Type.Dyn  = <?>
-  
-  Type.Fun  = [[Type] -> [Type]] { right }
-  
-  Type      = <(<Type>)> { bracket }
   
 template options
 

@@ -1,0 +1,42 @@
+module gtlc-source
+
+imports Common types
+
+sorts Expr context-free syntax
+
+  Expr.True  = <true>
+  
+  Expr.False = <false>
+  
+  Expr.If = <
+    if <Expr> then 
+      <Expr> 
+    else 
+      <Expr>
+  >
+ 
+  Expr.App  = <<Expr> <Expr>> { left }
+    
+  Expr.Lam  = <\\<ID> : <Type>. <Expr>>
+  
+  Expr.Lam  = <\\<ID>. <Expr>>
+  
+  Expr.Var  = <<ID>>
+  
+  Expr.Ascr = <<Expr> : <Type>>
+  
+  //  Expr.Cast = <<Expr> : <Type> =\> <Type>>
+  
+  Expr      = <(<Expr>)> { bracket }
+  
+context-free priorities
+
+    Expr.App
+  > Expr.Lam
+  > Expr.If
+  > Expr.Ascr
+  
+template options
+
+  ID = keyword { reject }
+  keyword -/- [a-zA-Z0-9]
