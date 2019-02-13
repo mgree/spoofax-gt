@@ -14,7 +14,9 @@ sorts Program context-free syntax
 
   Program.Elaborate = <
     <Expr>
+    
     elaborate as
+    
     <ExprC>
   >
   

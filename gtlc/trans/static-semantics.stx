@@ -28,6 +28,10 @@ rules
 
   programOK : Program
   
+  programOK(Expr(e1)) :- {s e2 T}
+    new s,
+    typeOfExpr(s, e1) == (e2, T).
+  
   programOK(ExprC(e)) :- {s T}
     new s,
     typeOfExprC(s, e) == T.
@@ -109,6 +113,7 @@ signature // sugar
     If    : Expr * Expr * Expr -> Expr
     App   : Expr * Expr -> Expr
 	Lam   : ID * Type * Expr -> Expr
+	LamD  : ID * Expr -> Expr
 	Ascr  : Expr * Type -> Expr
 	
   namespaces
@@ -127,13 +132,13 @@ rules // programs
 
   insertCasts : Program -> Program
   
-  insertCasts(Expr(e)) = Elaborate(e, e') :- {s T}
+  insertCasts(Expr(e1)) = Elaborate(e1, e2) :- {s T}
     new s,
-    typeOfExpr(s, e) == (e', T).
+    typeOfExpr(s, e1) == (e2, T).
   
-  insertCasts(Elaborate(e1, e2)) = Elaborate(e1, e') :- {s T}
+  insertCasts(Elaborate(e1, _)) = Elaborate(e1, e2) :- {s T}
     new s,
-    typeOfExpr(s, e1) == (e', T).
+    typeOfExpr(s, e1) == (e2, T).
 
 rules // expressions
 
@@ -161,20 +166,22 @@ rules // expressions
     applicationYields(e1', e2', T1, T2) == (e, T).
 
   typeOfExpr(s, Lam(x,T1,e)) = 
-    (LamC(x,T1,e'), Fun(T1,T2)) :- {s_lam}
+    (LamC(x, T1, e'), Fun(T1, T2)) :- {s_lam}
     new s_lam,
     typeOfExpr(s_lam,e) == (e', T2),
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
+
+  typeOfExpr(s, LamD(x, e)) = 
+    (LamC(x, Dyn(), e'), Fun(Dyn(), T2)) :- {s_lam}
+    new s_lam,
+    typeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar Dyn().
     
   typeOfExpr(s, Ascr(e,T)) = (e',T) :-
     typeOfExpr(s, e) == (e',T).
 
-//  typeOfExpr(s, Cast(e,Tsrc,Ttgt)) = (Cast(e',Tsrc,Tgt),Ttgt) :-
-//    typeOfExpr(s, e) == (e',Tsrc),
-//    consistent(Tsrc, Ttgt).
-
- 
 rules
 
   consistent : Type * Type

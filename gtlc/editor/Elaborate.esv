@@ -5,8 +5,7 @@ menus
   menu: "Elaborate" (openeditor)
 
     action: "Elaborate source AST" = menu-source-elaborate (source)
-    action: "Elaborate analyzed AST" = menu-analyzed-elaborate
+    action: "Elaborate source" = menu-source-elaborate-pp
     
-    
-    action: "Elaborate source" = menu-source-elaborate-pp (source)
-    action: "Elaborate analyzed" = menu-analyzed-elaborate-pp
+//    action: "Elaborate analyzed AST" = menu-analyzed-elaborate  
+//    action: "Elaborate analyzed" = menu-analyzed-elaborate-pp

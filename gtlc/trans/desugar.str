@@ -1,0 +1,11 @@
+module desugar
+
+imports signatures/gtlc-sig
+  
+rules
+
+  desugar-all = id
+
+//  desugar-all = topdown(try(desugar))
+//  
+//  desugar : LamD(x,e) -> Lam(x,Dyn(),e)

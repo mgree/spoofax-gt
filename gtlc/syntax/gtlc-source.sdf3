@@ -19,7 +19,7 @@ sorts Expr context-free syntax
     
   Expr.Lam  = <\\<ID> : <Type>. <Expr>>
   
-  Expr.Lam  = <\\<ID>. <Expr>>
+  Expr.LamD = <\\<ID>. <Expr>>
   
   Expr.Var  = <<ID>>
   
@@ -32,7 +32,7 @@ sorts Expr context-free syntax
 context-free priorities
 
     Expr.App
-  > Expr.Lam
+  > {Expr.LamD Expr.Lam}
   > Expr.If
   > Expr.Ascr
   
