@@ -5,7 +5,7 @@ imports
   statixruntime
 
   pp
-  
+
   signatures/gtlc-sig
 
 rules // Analysis
