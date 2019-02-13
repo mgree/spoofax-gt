@@ -36,9 +36,10 @@ rules
     new s,
     typeOfExprC(s, e) == T.
 
-  programOK(Elaborate(e1, e2)) :- {s T}
-    new s,
-    typeOfExprC(s, e2) == T.
+  programOK(Elaborate(e1, e2)) :- {s1 s2 T}
+    new s1, new s2,
+    typeOfExpr(s1, e1) == (e2, T),
+    typeOfExprC(s2, e2) == T.
     
 rules
 
