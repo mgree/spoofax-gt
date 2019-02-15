@@ -9,4 +9,3 @@ elaborate as
   false
 else
   true) ((\y : ?. y) : ? -> ? => ?) : bool
-  

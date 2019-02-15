@@ -1,1 +1,1 @@
-(\x. if true then false else x)
+(\x. if true then false else x) true
