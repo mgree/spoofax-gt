@@ -22,14 +22,22 @@ rules
 //    ; elaborated-ast := <elaborate> analyzed-ast
 //    ; pretty-printed := <pp-gtlc-string> Elaborate(analyzed-ast, elaborated-ast)
 
+  insertCasts = insertCasts(|"")
+  
+  insertCasts(|path) :
+    ast -> ast'
+    where 
+      indexed-ast := <stx-index-ast(|path)> ast; 
+      ast' := <stx-evaluate(|"static-semantics", "insertCasts")> [indexed-ast]
+    
   menu-source-elaborate:
       (source-ast, _, _, path, project-path) -> (filename, elaborated-ast)
     with
       filename := <guarantee-extension(|"elaborated.aterm")> path
     ; debug(!"a: ")
-    ; desugared-ast := <desugar-all; stx-index-ast(|path)> source-ast
+    ; desugared-ast := <desugar-all> source-ast
     ; debug(!"b: ")
-    ; analyzed-ast := <stx-evaluate(|"static-semantics", "insertCasts")> [desugared-ast]
+    ; analyzed-ast := <insertCasts(|path)> desugared-ast
     ; debug(!"c: ")
     ; elaborated-ast := <elaborate> analyzed-ast
     ; debug(!"d: ")
@@ -40,8 +48,8 @@ rules
       (source-ast, _, _, path, project-path) -> (filename, pretty-printed)
     with
       filename := <guarantee-extension(|"elaborated.glc")> path
-    ; desugared-ast := <desugar-all; stx-index-ast(|path)> source-ast
-    ; analyzed-ast := <stx-evaluate(|"static-semantics", "insertCasts")> [desugared-ast]
+    ; desugared-ast := <desugar-all> source-ast
+    ; analyzed-ast := <insertCasts(|path)> desugared-ast
     ; elaborated-ast := <elaborate> analyzed-ast
     ; pretty-printed := <pp-gtlc-string> elaborated-ast
  
