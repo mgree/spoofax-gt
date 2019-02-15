@@ -1,0 +1,55 @@
+module dynamic-semantics 
+
+imports ds-signatures/gtlc-sig 
+
+signature
+  sorts V
+  constructors
+    BoolV  : Bool -> V
+    FunV   : ID * ExprC * Env -> V
+  variables
+    v : V
+  sort aliases
+    Env = Map(String, V)
+  components
+    E : Env
+  arrows
+    Program -init-> V
+    ExprC --> V
+    ifc(V, ExprC, ExprC) --> V
+    castc(V, Type, Type) --> V
+    typecheck(V, Type) --> V
+
+rules
+
+  Elaborate(e1, e2) -init-> v
+  where E {} |- e2 --> v
+  
+  TrueC() --> BoolV(true)
+  
+  FalseC() --> BoolV(false)
+  
+  IfC(e1, e2, e3) --> ifc(e1, e2, e3)
+  
+  ifc(BoolV(true), e2, _) --> e2 
+  ifc(BoolV(false), _, e3) --> e3
+  
+  E |- VarC(x) --> E[x]
+ 
+  E |- LamC(x, t, e) --> FunV(x, e, E)
+  
+  AscrC(e, t) --> v
+  where e --> v // check type
+  
+  CastC(e, T, S) --> castc(e, T, S)
+  
+  castc(BoolV(b), Bool(), Dyn()) --> BoolV(b)
+  
+  castc(FunV(x, e, E), T, S) --> FunV(x, e, E)
+  
+  
+  
+  
+  
+  
+  
