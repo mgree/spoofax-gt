@@ -76,7 +76,7 @@ rules typeOfExprC : scope * ExprC -> Type
   typeOfExprC(s, AscrC(e,T)) = T :-
     typeOfExprC(s, e) == T.
     
-  typeOfExprC(s, CastC(e,T1, T2)) = T :-
+  typeOfExprC(s, CastC(e,T1,T2)) = T :-
     typeOfExprC(s, e) == T.
 
 rules applicationYieldsC : Type * Type -> Type
@@ -85,18 +85,6 @@ rules applicationYieldsC : Type * Type -> Type
   
   applicationYieldsC(Fun(T1,T2), T1') = T2 :-
     consistent(T1, T1').
-    
-rules meetC : Type * Type -> Type
-  
-  meetC(Bool(), Bool()) = Bool().
-  
-  meetC(Dyn(), T) = Dyn().
-  
-  meetC(T, Dyn()) = Dyn().
-  
-  meetC(Fun(T11,T12),Fun(T21,T22)) = Fun(T1, T2) :-
-    meetC(T11,T21) == T1,
-    meetC(T12,T22) == T2.
 
 signature // sugar
   sorts Expr constructors
@@ -157,14 +145,14 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   	  typeOfExpr(s, e3) == (e3', T3),
   	  meet(T2, T3) == T.
 
-  typeOfExpr(s, App(e1,e2)) = (e, T) :- {e1' e2' T1 T2}
+  typeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
     typeOfExpr(s, e1) == (e1', T1),
     typeOfExpr(s, e2) == (e2', T2),
     applicationYields(e1', e2', T1, T2) == (e, T).
 
-  typeOfExpr(s, Lam(x,T1,e)) = (LamC(x, T1, e'), Fun(T1, T2)) :- {s_lam}
+  typeOfExpr(s, Lam(x,T1,e)) = (LamC(x,T1,e'), Fun(T1,T2)) :- {s_lam}
     new s_lam,
-    typeOfExpr(s_lam,e) == (e', T2),
+    typeOfExpr(s_lam, e) == (e', T2),
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
 
