@@ -1,0 +1,12 @@
+module Analysis
+
+imports
+
+  statix/Menus
+
+menus
+
+  menu: "Run" (openeditor)
+
+    action: "Run AST" = eval-program (source)
+    

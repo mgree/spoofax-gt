@@ -1,0 +1,83 @@
+module interpreter
+
+imports signatures/gtlc-sig
+imports elaborate
+
+signature
+  sorts V
+  constructors 
+    BoolV  : Bool -> V
+    FunV   : ID * ExprC * Env -> V
+    
+rules
+
+//  eval :
+//    p@Expr(e) -> v
+//    where <insertCasts; eval> p => v
+    
+  eval :
+    ExprC(e) -> v
+    where <eval(|[])> e => v 
+
+  eval : 
+    Elaborate(e1, e2) -> v
+    where debug(!"eval: ")
+    where <eval(|[]) <+ debug(!"evaluation failed: ")> e2 => v 
+
+  eval(|E) : 
+    TrueC() -> BoolV(True())
+    where debug(!"eval: ")
+
+  eval(|E) : 
+    FalseC() -> BoolV(False())
+    where debug(!"eval: ")
+
+  eval(|E) : 
+    IfC(e1, e2, e3) -> <ifc(|E)>(<eval(|E)> e1, e2, e3)
+    where debug(!"eval: ")
+    
+  ifc(|E) :
+    (BoolV(True()), e1, e2) -> <eval(|E)> e1
+    where debug(!"ifc: ")
+    
+  ifc(|E) :
+    (BoolV(False()), e1, e2) -> <eval(|E)> e2
+    where debug(!"ifc: ")
+    
+  eval(|E) : 
+    VarC(x) -> <lookup(|x)> E
+    where debug(!"eval: ")
+    
+  eval(|E) :
+    LamC(x, _, e) -> FunV(x, e, E)
+    where debug(!"eval: ")
+    
+  eval(|E) : 
+    AppC(e1, e2) -> v_res
+    where debug(!"eval: ")
+    where <eval(|E)> e1 => FunV(x, e, E')
+        ; <eval(|E)> e2 => v_arg
+        ; <eval(|[(x, v_arg) | E'])> e => v_res
+    
+  eval(|E) : 
+    AscrC(e, _) -> <eval(|E)> e // todo: check type
+    where debug(!"eval: ")
+    
+  eval(|E) : 
+    CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
+    where debug(!"eval: ")
+    
+  castc(|E) :
+    (v, T, S) -> v // todo: type check  
+    where debug(!"castc: ")
+    
+rules
+
+  lookup(|x) :
+    [(x, v) | E] -> v
+  lookup(|x) :
+    [(y, _) | E] -> <lookup(|x)> E
+    where <not(eq)>(x, y)
+      
+  
+    
