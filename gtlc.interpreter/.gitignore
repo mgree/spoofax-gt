@@ -1,0 +1,24 @@
+
+/bin
+/target
+/.project
+/.classpath
+/.settings
+/.factorypath
+src/main/resources/signatures-digest.cache
+src/main/resources/specification.aterm
+src/main/resources/parsetable.tbl
+src/main/resources/logback.xml
+src/main/java/gtlc/interpreter/generated
+src/main/java/gtlc/interpreter/generated/terms
+src/main/java/gtlc/interpreter/generated/terms/build
+src/main/java/gtlc/interpreter/generated/terms/match
+src/test/java/gtlc/interpreter/generated/test
+/gtlc.launch
+/Testgtlc.launch
+/gtlc (Core).launch
+/gtlc (Daemon).launch
+/gtlc-core
+/gtlc-server
+/gtlc-client
+/gtlc
