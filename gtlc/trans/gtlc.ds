@@ -1,4 +1,4 @@
-module dynamic-semantics 
+module gtlc
 
 imports ds-signatures/gtlc-sig 
 
@@ -36,16 +36,16 @@ rules
   
   E |- VarC(x) --> E[x]
  
-  E |- LamC(x, t, e) --> FunV(x, e, E)
+  E |- LamC(x, _, e) --> FunV(x, e, E)
   
-  AscrC(e, t) --> v
+  AscrC(e, _) --> v
   where e --> v // check type
   
   CastC(e, T, S) --> castc(e, T, S)
   
-  castc(BoolV(b), Bool(), Dyn()) --> BoolV(b)
+  castc(BoolV(b), _, _) --> BoolV(b)
   
-  castc(FunV(x, e, E), T, S) --> FunV(x, e, E)
+  castc(FunV(x, e, E), _, _) --> FunV(x, e, E)
   
   
   
