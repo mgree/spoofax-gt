@@ -11,12 +11,15 @@ signature
     
 rules
 
-//  eval :
-//    p@Expr(e) -> v
-//    where <insertCasts; eval> p => v
+  eval :
+    p@Expr(e) -> v
+    where debug(!"eval: ")
+    where <insertCasts; strip-annos <+ debug(!"insertCasts failed: ")> p => p'
+        ; <eval> p' => v
     
   eval :
     ExprC(e) -> v
+    where debug(!"eval: ")
     where <eval(|[])> e => v 
 
   eval : 
