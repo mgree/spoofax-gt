@@ -143,9 +143,12 @@ signature // sugar
     App   : Expr * Expr -> Expr
 	Lam   : ID * Type * Expr -> Expr
 	LamD  : ID * Expr -> Expr
+	Let   : ID * Type * Expr * Expr -> Expr
+	LetD  : ID * Expr * Expr -> Expr
 	Ref   : Expr -> Expr
 	Deref : Expr -> Expr
 	Set   : Expr * Expr -> Expr
+	Seq   : Expr * Expr -> Expr
 	
   namespaces
     Var : string
@@ -181,6 +184,9 @@ rules insertCasts : Program -> Program
 
 rules typeOfExpr : scope * Expr -> ExprC * Type
 
+  typeOfExpr(s, Ascr(e,T)) = (e',T) :-
+    typeOfExpr(s, e) == (e',T).
+
   typeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
     typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
   
@@ -198,43 +204,63 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   typeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
     typeOfExpr(s, e1) == (e1', T1),
     typeOfExpr(s, e2) == (e2', T2),
-    applicationYields(e1', e2', T1, T2) == (e, T).
+    app(e1', e2', T1, T2) == (e, T).
 
-  typeOfExpr(s, Lam(x,T1,e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
+    rules app : ExprC * ExprC * Type * Type -> ExprC * Type
+  
+      app(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()).
+      
+      app(e1, e2, FunT(T1, T2), T1') = (AppC(e1, cast(e2, T1', T1)), T2) :-
+        consistent(T1', T1).
+
+  typeOfExpr(s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
     new s_lam,
     typeOfExpr(s_lam, e) == (e', T2),
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
 
-  typeOfExpr(s, LamD(x, e)) = 
-    (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
+  typeOfExpr(s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
     new s_lam,
     typeOfExpr(s_lam, e) == (e', T2),
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar DynT().
     
-  typeOfExpr(s, Ascr(e,T)) = (e',T) :-
-    typeOfExpr(s, e) == (e',T).
+  typeOfExpr(s, Let(x, T, e1, e2)) = (LetC(x, T, cast(e1', T1, T), e2'), S) :- {s_let}
+    typeOfExpr(s, e1) == (e1', T1),
+    consistent(T, T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T,
+    typeOfExpr(s_let, e2) == (e2', S).
+       
+  typeOfExpr(s, LetD(x, e1, e2)) = (LetC(x, t, cast(e1', T1, DynT()), e2'), S) :- {s_let}
+    typeOfExpr(s, e1) == (e1', T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar DynT(),
+    typeOfExpr(s_let, e2) == (e2', S).
     
   typeOfExpr(s, Ref(e)) = (RefC(e'), RefT(T)) :- 
     typeOfExpr(s, e) == (e', T).
     
-  typeOfExpr(s, Deref(e)) = (DerefC(e'), S) :- {T} // add some casting?
+  typeOfExpr(s, Deref(e)) = (DerefC(cast(e', T, RefT(S))), S) :- // check
     typeOfExpr(s, e) == (e', T),
-    consistent(T, RefT(S)).
-   
-   typeOfExpr(s, Set(e1, e2)) = (SetC(e1', e2'), T) :- {T1 T2 S} // add some casting?
-     typeOfExpr(s, e1) == (e1', T1),
-     consistent(T1, RefT(S)),
-     typeOfExpr(s, e2) == (e2', T2).
-     
+    deref(T) == S. 
     
-rules applicationYields : ExprC * ExprC * Type * Type -> ExprC * Type
-  
-  applicationYields(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T,DynT())), e2), DynT()).
-      
-  applicationYields(e1, e2, FunT(T1, T2), T1') = (AppC(e1, cast(e2, T1', T1)), T2) :-
-    consistent(T1', T1).
+    rules deref : Type -> Type   
+    deref(DynT()) = DynT().
+    deref(RefT(T)) = T.
+   
+  typeOfExpr(s, Set(e1, e2)) = (SetC(cast(e1', T1, RefT(S)), e2'), T) :- {T2} // add some casting?
+    typeOfExpr(s, e1) == (e1', T1),
+    deref(T1) == S, 
+    typeOfExpr(s, e2) == (e2', T2),
+    consistent(S, T2).
+     
+  typeOfExpr(s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
+    typeOfExpr(s, e1) == (e1', S),
+    typeOfExpr(s, e2) == (e2', T).
+     
     
 rules cast : ExprC * Type * Type -> ExprC
   
