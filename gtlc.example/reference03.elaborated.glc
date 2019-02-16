@@ -1,0 +1,7 @@
+let x : ref bool = ref true
+ in !x
+
+elaborate as
+
+let x : ref bool = ref true
+ in !x : bool

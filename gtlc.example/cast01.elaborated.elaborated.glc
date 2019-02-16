@@ -1,0 +1,11 @@
+(\x. if x then
+  false
+else
+  true) \y. y
+
+elaborate as
+
+(\x : ?. if x then
+  false
+else
+  true) ((\y : ?. y) : ? -> ? => ?) : bool

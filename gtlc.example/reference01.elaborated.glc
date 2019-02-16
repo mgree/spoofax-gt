@@ -1,0 +1,6 @@
+let x = ref true
+ in !x
+ 
+elaborate as
+
+ref true : ref bool
