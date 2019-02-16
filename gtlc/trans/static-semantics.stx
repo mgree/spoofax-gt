@@ -31,7 +31,20 @@ rules meet : Type * Type -> Type
     
 rules consistent : Type * Type
 
-  consistent(T1, T2) :- {S} meet(T1, T2) == S.
+//  consistent(T1, T2) :- {S} meet(T1, T2) == S.
+    
+  consistent(BoolT(), BoolT()).
+  
+  consistent(DynT(), T).
+  
+  consistent(T, DynT()).
+  
+  consistent(FunT(T11,T12), FunT(T21,T22)) :-
+    consistent(T11,T21),
+    consistent(T12,T22).
+    
+  consistent(RefT(T1), RefT(T2)) :-
+    consistent(T1, T2). // check 
     
 signature // core
   sorts ExprC constructors
@@ -46,6 +59,7 @@ signature // core
 	RefC   : ExprC -> ExprC
 	DerefC : ExprC -> ExprC
 	SetC   : ExprC * ExprC -> ExprC
+	LetC   : ID * Type * ExprC * ExprC -> ExprC
 
 rules programOK : Program
   
@@ -76,7 +90,7 @@ rules typeOfExprC : scope * ExprC -> Type
 
   typeOfExprC(s, LamC(x,T1,e)) = FunT(T1,T2) :- {s_lam}
     new s_lam,
-    typeOfExprC(s_lam,e) == T2,
+    typeOfExprC(s_lam, e) == T2,
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
     
@@ -85,6 +99,27 @@ rules typeOfExprC : scope * ExprC -> Type
     
   typeOfExprC(s, CastC(e,T1,T2)) = T :-
     typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, RefC(e)) = RefT(T) :- 
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, DerefC(e)) = S :- {T} 
+    typeOfExprC(s, e) == RefT(S). // check
+//    consistent(T, RefT(S)).
+   
+   typeOfExprC(s, SetC(e1, e2)) = T :- {T1 T2 S} // check
+     typeOfExprC(s, e1) == RefT(T),
+//     consistent(T1, RefT(S)),
+     typeOfExprC(s, e2) == T.
+//     consistent(T2, S). // ???
+     
+   typeOfExprC(s, LetC(x, T, e1, e2)) = S :- {s_let}
+    typeOfExprC(s, e1) == T,
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T,
+    typeOfExprC(s_let, e2) == S.
+     
 
 rules applicationYieldsC : Type * Type -> Type
   
