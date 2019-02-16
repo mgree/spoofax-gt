@@ -1,12 +1,17 @@
 module types
 
 sorts Type context-free syntax 
+  
+  Type       = <(<Type>)> { bracket }
 
-  Type.Bool = <bool>
+  Type.BoolT = <bool>
   
-  Type.Dyn  = <?>
+  Type.DynT  = <?>
   
-  Type.Fun  = [[Type] -> [Type]] { right }
+  Type.FunT  = [[Type] -> [Type]] { right }
   
-  Type      = <(<Type>)> { bracket }
+  Type.RefT  = <ref <Type>>
   
+context-free priorities 
+
+  Type.RefT > Type.FunT

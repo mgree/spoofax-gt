@@ -3,6 +3,12 @@ module gtlc-core
 imports Common types
 
 sorts ExprC context-free syntax
+  
+  ExprC        = <(<ExprC>)> { bracket }
+  
+  ExprC.AscrC  = <<ExprC> : <Type>>
+  
+  ExprC.CastC  = <<ExprC> : <Type> =\> <Type>>
 
   ExprC.TrueC  = <true>
   
@@ -21,17 +27,19 @@ sorts ExprC context-free syntax
     
   ExprC.VarC  = <<ID>>
   
-  ExprC.AscrC = <<ExprC> : <Type>>
+  ExprC.RefC  = <ref <ExprC>>
   
-  ExprC.CastC = <<ExprC> : <Type> =\> <Type>>
+  ExprC.DerefC = <!<ExprC>>
   
-  ExprC      = <(<ExprC>)> { bracket }
+  ExprC.SetC  = <<ExprC> := <ExprC>>
   
 context-free priorities
 
     ExprC.AppC
   > ExprC.CastC
   > ExprC.LamC
+  > {ExprC.RefC ExprC.DerefC}
+  > ExprC.SetC
   > ExprC.IfC
   > ExprC.AscrC
   

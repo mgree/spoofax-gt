@@ -3,6 +3,10 @@ module gtlc-source
 imports Common types
 
 sorts Expr context-free syntax
+  
+  Expr = <(<Expr>)> { bracket }
+  
+  Expr.Ascr = <<Expr> : <Type>>
 
   Expr.True  = <true>
   
@@ -23,16 +27,18 @@ sorts Expr context-free syntax
   
   Expr.Var  = <<ID>>
   
-  Expr.Ascr = <<Expr> : <Type>>
+  Expr.Ref  = <ref <Expr>>
   
-  //  Expr.Cast = <<Expr> : <Type> =\> <Type>>
+  Expr.Deref = <!<Expr>>
   
-  Expr      = <(<Expr>)> { bracket }
+  Expr.Set  = <<Expr> := <Expr>>
   
 context-free priorities
 
     Expr.App
   > {Expr.LamD Expr.Lam}
+  > {Expr.Ref Expr.Deref}
+  > Expr.Set
   > Expr.If
   > Expr.Ascr
   
@@ -40,3 +46,7 @@ template options
 
   ID = keyword { reject }
   keyword -/- [a-zA-Z0-9]
+  
+  
+// context-free syntax // not in the source language
+  //  Expr.Cast = <<Expr> : <Type> =\> <Type>>
