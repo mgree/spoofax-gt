@@ -27,12 +27,12 @@ sorts Expr context-free syntax
   
   Expr.Var  = <<ID>>
   
-  Expr.Let  = <
+  Expr.LetD  = <
     let <ID> = <Expr> 
      in <Expr>
   >
   
-  Expr.LetT  = <
+  Expr.Let  = <
     let <ID> : <Type> = <Expr> 
      in <Expr>
   >
@@ -43,6 +43,11 @@ sorts Expr context-free syntax
   
   Expr.Set  = <<Expr> := <Expr>>
   
+  Expr.Seq  = <
+    <Expr>; 
+    <Expr>
+  > {right}
+  
 context-free priorities
 
     Expr.App
@@ -50,6 +55,8 @@ context-free priorities
   > {Expr.Ref Expr.Deref}
   > Expr.Set
   > Expr.If
+  > Expr.Seq
+  > Expr.Let
   > Expr.Ascr
   
 template options

@@ -33,9 +33,15 @@ sorts ExprC context-free syntax
   
   ExprC.SetC  = <<ExprC> := <ExprC>> {non-assoc}
   
-  ExprC.SeqC  = <<ExprC>; <ExprC>> {right}
+  ExprC.SeqC  = <
+    <ExprC>; 
+    <ExprC>
+  > {right}
   
-  ExprC.LetC  = <let <ID> : <Type> = <ExprC> in <ExprC>>
+  ExprC.LetC  = <
+    let <ID> : <Type> = <ExprC> 
+     in <ExprC>
+  >
   
 context-free priorities
 
