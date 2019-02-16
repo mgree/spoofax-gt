@@ -100,6 +100,12 @@ rules // eval expressions
         ; rules( Store : loc -> v )
         
   eval(|E) :
+    SeqC(e1, e2) -> v
+    where debug(!"eval: ")
+    where <eval(|E)> e1 => _
+        ; <eval(|E)> e2 => v
+        
+  eval(|E) :
     LetC(x, t, e1, e2) -> v2
     where debug(!"eval: ")
     where <eval(|E)> e1 => v1

@@ -31,7 +31,9 @@ sorts ExprC context-free syntax
   
   ExprC.DerefC = <!<ExprC>>
   
-  ExprC.SetC  = <<ExprC> := <ExprC>>
+  ExprC.SetC  = <<ExprC> := <ExprC>> {non-assoc}
+  
+  ExprC.SeqC  = <<ExprC>; <ExprC>> {right}
   
   ExprC.LetC  = <let <ID> : <Type> = <ExprC> in <ExprC>>
   
@@ -43,6 +45,8 @@ context-free priorities
   > {ExprC.RefC ExprC.DerefC}
   > ExprC.SetC
   > ExprC.IfC
+  > ExprC.SeqC
+  > ExprC.LetC
   > ExprC.AscrC
   
 template options

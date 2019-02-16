@@ -1,5 +1,5 @@
 core 
 
 let x : ref bool = ref true
- in !x
+ in x := false; !x
   

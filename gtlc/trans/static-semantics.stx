@@ -59,6 +59,7 @@ signature // core
 	RefC   : ExprC -> ExprC
 	DerefC : ExprC -> ExprC
 	SetC   : ExprC * ExprC -> ExprC
+	SeqC   : ExprC * ExprC -> ExprC
 	LetC   : ID * Type * ExprC * ExprC -> ExprC
 
 rules programOK : Program
@@ -112,6 +113,10 @@ rules typeOfExprC : scope * ExprC -> Type
 //     consistent(T1, RefT(S)),
      typeOfExprC(s, e2) == T.
 //     consistent(T2, S). // ???
+
+   typeOfExprC(s, SeqC(e1, e2)) = T :- {S}
+     typeOfExprC(s, e1) == S,
+     typeOfExprC(s, e2) == T.
      
    typeOfExprC(s, LetC(x, T, e1, e2)) = S :- {s_let}
     typeOfExprC(s, e1) == T,
