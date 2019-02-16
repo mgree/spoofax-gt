@@ -10,7 +10,7 @@ sorts Program context-free syntax
     <<Expr>>
   
   Program.ExprC = 
-    <core <Expr>>
+    <core <ExprC>>
 
   Program.Elaborate = <
     <Expr>
