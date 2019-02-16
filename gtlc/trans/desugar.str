@@ -1,11 +1,18 @@
 module desugar
 
 imports signatures/gtlc-sig
+imports signatures/gtlc-source-sig
+imports signatures/gtlc-core-sig
   
 rules
 
-  desugar-all = id
-
-//  desugar-all = topdown(try(desugar))
-//  
+  desugar-all = topdown(try(desugar))
+  
+  desugar : Let(x, e1, e2) -> App(LamD(x, e2), e1)
+  
+  desugar : LetT(x, t, e1, e2) -> App(Lam(x, t, e2), e1)
+  
+//  desugar : LetC(x, t, e1, e2) -> AppC(LamC(x, t, e2), e1)
+  
+ 
 //  desugar : LamD(x,e) -> Lam(x,Dyn(),e)

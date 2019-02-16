@@ -4,10 +4,11 @@ imports
   statixruntime
   pp
   signatures/gtlc-sig
-
+  desugar
+  
 rules // Analysis
 
-  editor-analyze = stx-editor-analyze(id|"static-semantics", "programOK")
+  editor-analyze = stx-editor-analyze(desugar-all|"static-semantics", "programOK")
 
   //editor-analyze = stx-editor-elaborate(desugar-all|"static-semantics", "insertCasts")
 

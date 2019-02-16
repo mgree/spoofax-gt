@@ -27,6 +27,16 @@ sorts Expr context-free syntax
   
   Expr.Var  = <<ID>>
   
+  Expr.Let  = <
+    let <ID> = <Expr> 
+     in <Expr>
+  >
+  
+  Expr.LetT  = <
+    let <ID> : <Type> = <Expr> 
+     in <Expr>
+  >
+  
   Expr.Ref  = <ref <Expr>>
   
   Expr.Deref = <!<Expr>>
