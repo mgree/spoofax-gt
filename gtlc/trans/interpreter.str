@@ -8,8 +8,9 @@ signature
   constructors 
     BoolV  : Bool -> V
     FunV   : ID * ExprC * Env -> V
+    RefV   : String -> V
     
-rules
+rules // eval programs
 
   eval :
     p@Expr(e) -> v
@@ -26,6 +27,22 @@ rules
     Elaborate(e1, e2) -> v
     where debug(!"eval: ")
     where <eval(|[]) <+ debug(!"evaluation failed: ")> e2 => v 
+
+rules // casting 
+
+  eval(|E) : 
+    AscrC(e, _) -> <eval(|E)> e // todo: check type
+    where debug(!"eval: ")
+    
+  eval(|E) : 
+    CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
+    where debug(!"eval: ")
+    
+  castc(|E) :
+    (v, T, S) -> v // todo: type check  
+    where debug(!"castc: ")
+    
+rules // eval expressions
 
   eval(|E) : 
     TrueC() -> BoolV(True())
@@ -62,17 +79,32 @@ rules
         ; <eval(|E)> e2 => v_arg
         ; <eval(|[(x, v_arg) | E'])> e => v_res
     
-  eval(|E) : 
-    AscrC(e, _) -> <eval(|E)> e // todo: check type
+  eval(|E) :
+    RefC(e) -> RefV(loc)
     where debug(!"eval: ")
-    
+    where <eval(|E)> e => v
+        ; new => loc
+        ; rules( Store : loc -> v )
+        
   eval(|E) : 
-    CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
+    DerefC(e) -> v
     where debug(!"eval: ")
-    
-  castc(|E) :
-    (v, T, S) -> v // todo: type check  
-    where debug(!"castc: ")
+    where <eval(|E)> e => RefV(loc)
+        ; <Store> loc => v
+        
+  eval(|E) : 
+    SetC(e1, e2) -> v
+    where debug(!"eval: ")
+    where <eval(|E)> e1 => RefV(loc)
+        ; <eval(|E)> e2 => v
+        ; rules( Store : loc -> v )
+        
+  eval(|E) :
+    LetC(x, t, e1, e2) -> v2
+    where debug(!"eval: ")
+    where <eval(|E)> e1 => v1
+        ; debug(!"let var: ")
+        ; <eval(|[(x, v1) | E])> e2 => v2
     
 rules
 
