@@ -194,9 +194,10 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   
   typeOfExpr(s, False()) = (FalseC(), BoolT()).
   
-  typeOfExpr(s, If(e1,e2,e3)) = (IfC(e1',cast(e2',T2,T),cast(e3',T3,T)), T) :- {T1}
+  typeOfExpr(s, If(e1,e2,e3)) = 
+    (If(cast(e1',T1, Bool()),cast(e2',T2,T),cast(e3',T3,T)), T) 
+    :-
   	  typeOfExpr(s, e1) == (e1', T1),
-  	  consistent(T1, BoolT()),
   	  typeOfExpr(s, e2) == (e2', T2),
   	  typeOfExpr(s, e3) == (e3', T3),
   	  meet(T2, T3) == T.
@@ -265,7 +266,6 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
 rules cast : ExprC * Type * Type -> ExprC
   
   cast(e, T, T) = e.
-  
-  cast(e, T1, T2) = CastC(e, T1, T2).
-  
-  
+
+  cast(e, T1, T2) = CastC(e, T1, T2) :- consistent(T1, T2).
+
