@@ -10,6 +10,8 @@ sorts ExprC context-free syntax
   
   ExprC.CastC  = <<ExprC> : <Type> =\> <Type>>
 
+  ExprC.UnitC   = <unit>
+
   ExprC.TrueC  = <true>
   
   ExprC.FalseC = <false>

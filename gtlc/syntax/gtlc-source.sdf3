@@ -8,6 +8,8 @@ sorts Expr context-free syntax
   
   Expr.Ascr = <<Expr> : <Type>>
 
+  Expr.Unit  = <unit>
+
   Expr.True  = <true>
   
   Expr.False = <false>

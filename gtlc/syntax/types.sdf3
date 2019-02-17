@@ -3,6 +3,8 @@ module types
 sorts Type context-free syntax 
   
   Type       = <(<Type>)> { bracket }
+  
+  Type.UnitT = <unit>
 
   Type.BoolT = <bool>
   
