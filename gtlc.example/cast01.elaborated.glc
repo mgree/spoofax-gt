@@ -5,7 +5,7 @@ else
 
 elaborate as
 
-(\x : ?. if x then
+(\x : ?. if x : ? => bool then
   false
 else
   true) ((\y : ?. y) : ? -> ? => ?) : bool
