@@ -195,7 +195,7 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   typeOfExpr(s, False()) = (FalseC(), BoolT()).
   
   typeOfExpr(s, If(e1,e2,e3)) = 
-    (If(cast(e1',T1, Bool()),cast(e2',T2,T),cast(e3',T3,T)), T) 
+    (IfC(cast(e1',T1,BoolT()),cast(e2',T2,T),cast(e3',T3,T)), T) 
     :-
   	  typeOfExpr(s, e1) == (e1', T1),
   	  typeOfExpr(s, e2) == (e2', T2),
