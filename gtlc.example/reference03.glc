@@ -1,2 +1,2 @@
 let x : ref bool = ref true
- in x := false; !x
+ in x := if !x then false else true; !x
