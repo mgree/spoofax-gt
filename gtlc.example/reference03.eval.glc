@@ -1,9 +1,12 @@
-let x : ref bool = ref true
- in x := if !x then
-   false
- else
-   true;
- !x
+core
+
+  let x : ref bool = ref true
+   in x := if !x then
+     false
+   else
+     true;
+   !x : bool
 
 evaluates to
+
   false

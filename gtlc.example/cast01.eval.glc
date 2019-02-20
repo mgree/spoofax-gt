@@ -1,0 +1,13 @@
+core
+
+  (\x : ?. if x : ? => bool then
+    false
+  else
+    true) ((\y : ?. y) : ? -> ? => ?) : bool
+
+evaluates to
+
+  stuck (\x : ?. if x : ? => bool then
+    false
+  else
+    true) ((\y : ?. y) : ? -> ? => ?) : bool with
