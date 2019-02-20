@@ -80,7 +80,7 @@ rules // eval programs
     where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v 
 
   eval : 
-    Elaborate(e1, e2) -> ExprV(e1, v)
+    Elaborate(e1, e2) -> ExprCV(e2, v)
     where debug(!"eval: ")
     where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e2 => v 
     
@@ -90,6 +90,7 @@ rules // casting
   eval(|E) : 
     AscrC(e, _) -> <eval(|E)> e // todo: check type // MMG: no actual need---the type checker has done it. CastC will do the checks
     where debug(!"eval: ")
+    // so should we remove ascriptions from the program during cast insertion?
     
   eval(|E) : 
     CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
@@ -161,7 +162,7 @@ rules // casting
   castc(|E) : 
     (v, T1, T2) -> <fail>
     where debug(!"castc fails: ")
-    where rules( Exc: _ -> BlameV("error", v, T1, T2) ) 
+    where rules( Exc: _ -> BlameV(<double-quote>"error", v, T1, T2) ) 
         
 rules // eval expressions
  
@@ -248,7 +249,7 @@ rules // eval expressions
         
   derefc(|E) : 
     RefProxyV(v, T1, T2) -> <fail>
-    where rules( Exc : _ -> BlameV("deref error", v, T1, T2) )
+    where rules( Exc : _ -> BlameV(<double-quote>"deref error", v, T1, T2) )
         
   eval(|E) : 
     SetC(e1, e2) -> v_res
@@ -281,10 +282,10 @@ rules // eval expressions
         ; debug(!"let var: ")
         ; <eval(|[Bind(x, v1) | E])> e2 => v2
         
-  eval(|E) :
-    e -> <fail>
-    where debug(!"eval is stuck: ")
-    where rules( Exc : _ -> StuckV(e, E) )
+//  eval(|E) :
+//    e -> <fail>
+//    where debug(!"eval is stuck: ")
+//    where rules( Exc : _ -> StuckV(e, E) )
     
 rules
 
