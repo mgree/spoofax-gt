@@ -238,11 +238,11 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
     s_let -> Var{x@x} with typeOfVar T,
     typeOfExpr(s_let, e2) == (e2', S).
        
-  typeOfExpr(s, LetD(x, e1, e2)) = (LetC(x, t, cast(e1', T1, DynT()), e2'), S) :- {s_let}
+  typeOfExpr(s, LetD(x, e1, e2)) = (LetC(x, T1, e1', e2'), S) :- {s_let}
     typeOfExpr(s, e1) == (e1', T1),
     new s_let,
     s_let -P-> s,
-    s_let -> Var{x@x} with typeOfVar DynT(),
+    s_let -> Var{x@x} with typeOfVar T1,
     typeOfExpr(s_let, e2) == (e2', S).
     
   typeOfExpr(s, Ref(e)) = (RefC(e'), RefT(T)) :- 
