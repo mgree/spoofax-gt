@@ -20,6 +20,7 @@ signature
     RefV   : String -> V
     RefProxyV : V * Type * Type -> V // v : Ref T1 => Ref T2
     DynV   : V -> V
+    BlameV : String * V * Type * Type -> V
 
 signature // core
   sorts ExprC constructors

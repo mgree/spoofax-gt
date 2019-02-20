@@ -186,8 +186,8 @@ rules insertCasts : Program -> Program
 
 rules typeOfExpr : scope * Expr -> ExprC * Type
 
-  typeOfExpr(s, Ascr(e,T)) = (e',T) :-
-    typeOfExpr(s, e) == (e',T).
+  typeOfExpr(s, Ascr(e,T)) = (cast(e',T',T),T) :-
+    typeOfExpr(s, e) == (e',T').
 
   typeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
     typeOfVar of Var{x@x} in s |-> [(p, (d, T))].

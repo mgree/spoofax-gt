@@ -1,0 +1,15 @@
+AscrC(
+  AppC(
+    LamC(
+      "x"
+    , DynT()
+    , IfC(CastC(VarC("x"), DynT(), BoolT()), FalseC(), TrueC())
+    )
+  , CastC(
+      LamC("y", DynT(), VarC("y"))
+    , FunT(DynT(), DynT())
+    , DynT()
+    )
+  )
+, BoolT()
+)
