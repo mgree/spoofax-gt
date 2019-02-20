@@ -7,6 +7,10 @@ signature
     Expr      : Expr -> Program
     ExprC     : ExprC -> Program
     Elaborate : Expr * ExprC -> Program
+    ExprV     : Expr * V -> Program
+    ExprCV    : ExprC * V -> Program
+  
+  sorts V 
   
   sorts Type constructors
     UnitT : Type
@@ -69,6 +73,9 @@ rules programOK : Program
   programOK(ExprC(e)) :- {s T}
     new s,
     typeOfExprC(s, e) == T.
+    
+  programOK(ExprCV(e, v)) :- 
+    programOK(ExprC(e)).
     
 rules typeOfExprC : scope * ExprC -> Type
 
@@ -173,6 +180,9 @@ rules
     new s1, new s2,
     typeOfExpr(s1, e1) == (e2, T),
     typeOfExprC(s2, e2) == T.
+  
+  programOK(ExprV(e, v)) :- 
+    programOK(Expr(e)).
 
 rules insertCasts : Program -> Program
   
