@@ -190,6 +190,10 @@ rules insertCasts : Program -> Program
     new s,
     typeOfExpr(s, e1) == (e2, T).
   
+  insertCasts(ExprV(e1, v)) = Elaborate(e1, AscrC(e2, T)) :- {s}
+    new s,
+    typeOfExpr(s, e1) == (e2, T).
+  
   insertCasts(Elaborate(e1, _)) = Elaborate(e1, AscrC(e2, T)) :- {s}
     new s,
     typeOfExpr(s, e1) == (e2, T).
