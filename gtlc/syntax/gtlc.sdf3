@@ -1,6 +1,6 @@
 module gtlc
 
-imports Common gtlc-source gtlc-core types
+imports Common gtlc-source gtlc-core types values
 
 context-free start-symbols Program
 
@@ -20,6 +20,20 @@ sorts Program context-free syntax
     <ExprC>
   >
   
+  Program.ExprCV = <
+   core 
+     <ExprC>
+   evaluates to
+     <V>
+  >
+  
+  Program.ExprV = <
+    <Expr>
+    
+    evaluates to
+      <V>
+  >
+    
 template options
 
   ID = keyword { reject }
