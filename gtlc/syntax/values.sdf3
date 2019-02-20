@@ -13,17 +13,17 @@ sorts V context-free syntax
 
   V.UnitV = <unit>
   V.BoolV = <<Bool>>
-  V.FunV  = <fun(<ID>, <ExprC>, <Env>)>
+  V.FunV  = <fun(<ID>, <ExprC>, [<Env>])>
   V.FunProxyV = [[V] : [Type] -> [Type] => [Type] -> [Type]]
   V.RefV  = <<ID>> 
   V.RefProxyV = [[V] : ref [Type] => ref [Type]]
   V.DynV  = <dyn <V>>
-  V.BlameV = [blame [STRING] [V] expected [Type] got [Type]]
+  V.BlameV = [blame [STRING] [V] got [Type] expected [Type]]
   V.StuckV = <stuck <ExprC> with <Env>>
   
 sorts Env context-free syntax
   
-  Env = Bind*
+  Env = <<Bind*>>
   
 sorts Bind context-free syntax 
   

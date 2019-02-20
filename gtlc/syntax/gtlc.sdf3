@@ -22,8 +22,11 @@ sorts Program context-free syntax
   
   Program.ExprCV = <
    core 
+   
      <ExprC>
+     
    evaluates to
+   
      <V>
   >
   
@@ -31,6 +34,7 @@ sorts Program context-free syntax
     <Expr>
     
     evaluates to
+    
       <V>
   >
     
