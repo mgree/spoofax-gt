@@ -1,0 +1,9 @@
+let x : ref bool = ref true
+ in x := if !x then
+   false
+ else
+   true;
+ !x
+
+evaluates to
+  false
