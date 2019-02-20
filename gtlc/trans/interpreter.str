@@ -3,12 +3,47 @@ module interpreter
 imports signatures/gtlc-sig
 imports elaborate
 
+// MMG: why is this necessary for my errors to go away? are the errors benign?
+signature
+  sorts Bool
+  constructors
+    True : Bool
+    False : Bool
+
 signature
   sorts V
   constructors 
+    UnitV  : V
     BoolV  : Bool -> V
     FunV   : ID * ExprC * Env -> V
+    FunProxyV : V * Type * Type * Type * Type -> V // v : T11->T12 => T21->T22
     RefV   : String -> V
+    RefProxyV : V * Type * Type -> V // v : Ref T1 => Ref T2
+    DynV   : V -> V
+
+signature // core
+  sorts ExprC constructors
+	AscrC  : ExprC * Type -> ExprC
+	CastC  : ExprC * Type * Type -> ExprC
+    VarC   : ID -> ExprC
+    UnitC  : ExprC
+    TrueC  : ExprC
+    FalseC : ExprC
+    IfC    : ExprC * ExprC * ExprC -> ExprC
+    AppC   : ExprC * ExprC -> ExprC
+	LamC   : ID * Type * ExprC -> ExprC
+	RefC   : ExprC -> ExprC
+	DerefC : ExprC -> ExprC
+	SetC   : ExprC * ExprC -> ExprC
+	SeqC   : ExprC * ExprC -> ExprC
+	LetC   : ID * Type * ExprC * ExprC -> ExprC
+	
+  sorts Type constructors
+    UnitT : Type
+	BoolT : Type
+	DynT  : Type
+	FunT  : Type * Type -> Type  
+	RefT  : Type -> Type
     
 rules // eval programs
 
@@ -31,18 +66,80 @@ rules // eval programs
 rules // casting 
 
   eval(|E) : 
-    AscrC(e, _) -> <eval(|E)> e // todo: check type
+    AscrC(e, _) -> <eval(|E)> e // todo: check type // MMG: no actual need---the type checker has done it. CastC will do the checks
     where debug(!"eval: ")
     
   eval(|E) : 
     CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
     where debug(!"eval: ")
+  
+  castc(|E) :
+    (v, T, T) -> v
+    where debug(!"castc: ")
+     
+  castc(|E) :
+    (UnitV(), UnitT(), DynT()) -> DynV(UnitV())
+    where debug(!"castc: ")
+
+  castc(|E) :
+    (DynV(UnitV()), DynT(), UnitT()) -> UnitV()
+    where debug(!"castc: ")
+      
+  castc(|E) :
+    (BoolV(b), BoolT(), DynT()) -> DynV(BoolV(b))    
+    where debug(!"castc: ")
+
+  castc(|E) :
+    (DynV(BoolV(b)), DynT(), BoolT()) -> BoolV(b)      
+    where debug(!"castc: ")
+   
+  // we use explicit function proxies FunProxyV for 
+  //   (a) legibility/debuggability
+  //   (b) so we can do space-efficiency if we want
     
   castc(|E) :
-    (v, T, S) -> v // todo: type check  
+    (v, FunT(T11, T12), FunT(T21, T22)) -> FunProxyV(v, T11, T12, T21, T22)
     where debug(!"castc: ")
     
+  castc(|E) :
+    (v, FunT(T11, T12), DynT()) -> DynV(v_dyn)
+    where debug(!"castc: ")
+        ; <castc(|E)> (v, FunT(T11, T12), FunT(DynT(), DynT())) => v_dyn
+
+  castc(|E) :
+    (DynV(v), DynT(), FunT(T21, T22)) -> FunProxyV(v, DynT(), DynT(), T21, T22)
+    where debug(!"castc: ")
+    
+  // the Siek and Taha rule for references is a little bonkers:
+  //
+  // e => v   v is a ref t
+  // ---------------------
+  // <ref t> e => v
+  //
+  // like... how do they know what type is in the ref?
+  //
+  // Herman Tomb Flanagan give a much more sensible semantics, with explicit proxies
+  // we then use these proxies in the opsem, just like FunProxyV
+    
+  castc(|E) : 
+    (v, RefT(T1), RefT(T2)) -> RefProxyV(v, T1, T2)
+    where debug(!"castc: ")
+  
+  castc(|E) :
+    (v, RefT(T), DynT()) -> DynV(v_dyn)
+      where debug(!"castc: ")
+          ; <castc(|E)> (v, RefT(T), RefT(DynT())) => v_dyn
+  
+  castc(|E) :
+    (DynV(v), DynT(), RefT(T)) -> RefProxyV(v, DynT(), T)
+      where debug(!"castc: ")
+  
+        
 rules // eval expressions
+
+  eval(|E) : 
+    UnitC() -> UnitV()
+    where debug(!"eval: ")
 
   eval(|E) : 
     TrueC() -> BoolV(True())
@@ -75,9 +172,21 @@ rules // eval expressions
   eval(|E) : 
     AppC(e1, e2) -> v_res
     where debug(!"eval: ")
-    where <eval(|E)> e1 => FunV(x, e, E')
+    where <eval(|E)> e1 => v_fun
         ; <eval(|E)> e2 => v_arg
+        ; <appc(|E)> (v_fun, v_arg) => v_res
+
+  appc(|E) :
+    (FunV(x, e, E'), v_arg) -> v_res
+    where debug(!"app: ")
         ; <eval(|[(x, v_arg) | E'])> e => v_res
+        
+  appc(|E) :
+    (FunProxyV(v_fun, T11, T12, T21, T22), v_arg) -> v_res_cast
+    where debug(!"app: ")
+        ; <castc(|E)> (v_arg, T21, T11) => v_arg_cast
+        ; <appc(|E)> (v_fun, v_arg_cast) => v_res
+        ; <castc(|E)> (v_res, T12, T22) => v_res_cast
     
   eval(|E) :
     RefC(e) -> RefV(loc)
@@ -89,15 +198,36 @@ rules // eval expressions
   eval(|E) : 
     DerefC(e) -> v
     where debug(!"eval: ")
-    where <eval(|E)> e => RefV(loc)
+    where <derefc(|E)> e => v
+  
+  derefc(|E) :
+    RefV(loc) -> v
+    where debug(!"derefc: ")
         ; <Store> loc => v
+
+  derefc(|E) : 
+    RefProxyV(v, T1, T2) -> v_cast
+    where debug(!"derefc: ")
+        ; <derefc(|E)> v => v_res
+        ; <castc(|E)> (v_res, T1, T2) => v_cast
         
   eval(|E) : 
-    SetC(e1, e2) -> v
+    SetC(e1, e2) -> v_res
     where debug(!"eval: ")
-    where <eval(|E)> e1 => RefV(loc)
-        ; <eval(|E)> e2 => v
-        ; rules( Store : loc -> v )
+    where <eval(|E)> e1 => v_ref
+        ; <eval(|E)> e2 => v_val
+        ; <setc(|E)> (v_ref, v_val) => v_res
+
+  setc(|E) :
+    (RefV(loc), v) -> UnitV()
+    where debug(!"setc: ")
+        ; rules( Store : loc -> v)
+
+  setc(|E) :
+    (RefProxyV(v_loc, T1, T2), v_val) -> v_res
+    where debug(!"setc: ")
+        ; <castc(|E)> (v_val, T2, T1) => v_cast_val
+        ; <setc(|E)> (v_loc, v_cast_val) => v_res
         
   eval(|E) :
     SeqC(e1, e2) -> v
