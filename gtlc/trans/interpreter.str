@@ -3,30 +3,31 @@ module interpreter
 imports signatures/gtlc-sig
 imports signatures/gtlc-core-sig
 imports signatures/types-sig
+imports signatures/values-sig
 imports elaborate
 
 // MMG: why is this necessary for my errors to go away? are the errors benign?
 
 // what errors do you get? 
-signature // Bool is not a built-in type
-  sorts Bool
-  constructors
-    True : Bool
-    False : Bool
+//signature // Bool is not a built-in type
+//  sorts Bool
+//  constructors
+//    True : Bool
+//    False : Bool
 
-// if we make a syntax for values, we can pretty-print results
-signature
-  sorts V
-  constructors 
-    UnitV     : V
-    BoolV     : Bool -> V
-    FunV      : ID * ExprC * Env -> V
-    FunProxyV : V * Type * Type * Type * Type -> V // v : T11->T12 => T21->T22
-    RefV      : String -> V
-    RefProxyV : V * Type * Type -> V // v : Ref T1 => Ref T2
-    DynV      : V -> V
-    BlameV    : String * V * Type * Type -> V
-    StuckV    : ExprC * Env -> V
+//// if we make a syntax for values, we can pretty-print results
+//signature
+//  sorts V
+//  constructors 
+//    UnitV     : V
+//    BoolV     : Bool -> V
+//    FunV      : ID * ExprC * Env -> V
+//    FunProxyV : V * Type * Type * Type * Type -> V // v : T11->T12 => T21->T22
+//    RefV      : String -> V
+//    RefProxyV : V * Type * Type -> V // v : Ref T1 => Ref T2
+//    DynV      : V -> V
+//    BlameV    : String * V * Type * Type -> V
+//    StuckV    : ExprC * Env -> V
 
 // imported from signatures/gtlc-core-sig
 //signature // core
@@ -59,18 +60,30 @@ rules // eval programs
   eval :
     p@Expr(e) -> v
     where debug(!"eval: ")
-    where <insertCasts; strip-annos <+ debug(!"insertCasts failed: ")> p => p'
+    where <insertCasts; strip-annos <+ debug(!"insertCasts failed: "); fail> p => p'
         ; <eval> p' => v
-    
+
   eval :
-    ExprC(e) -> v
+    p@ExprV(e, _) -> v
+    where debug(!"eval: ")
+    where <insertCasts; strip-annos <+ debug(!"insertCasts failed: "); fail> p => p'
+        ; <eval> p' => v
+       
+  eval :
+    ExprC(e) -> ExprCV(e, v)
+    where debug(!"eval: ")
+    where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v 
+       
+  eval :
+    ExprCV(e, _) -> ExprCV(e, v)
     where debug(!"eval: ")
     where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v 
 
   eval : 
-    Elaborate(e1, e2) -> v
+    Elaborate(e1, e2) -> ExprV(e1, v)
     where debug(!"eval: ")
     where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e2 => v 
+    
 
 rules // casting 
 
@@ -151,7 +164,7 @@ rules // casting
     where rules( Exc: _ -> BlameV("error", v, T1, T2) ) 
         
 rules // eval expressions
-
+ 
   eval(|E) : 
     UnitC() -> UnitV()
     where debug(!"eval: ")
@@ -194,7 +207,7 @@ rules // eval expressions
   appc(|E) :
     (FunV(x, e, E'), v_arg) -> v_res
     where debug(!"app: ")
-        ; <eval(|[(x, v_arg) | E'])> e => v_res
+        ; <eval(|[Bind(x, v_arg) | E'])> e => v_res
         
   appc(|E) :
     (FunProxyV(v_fun, T11, T12, T21, T22), v_arg) -> v_res_cast
@@ -266,7 +279,7 @@ rules // eval expressions
     where debug(!"eval: ")
     where <eval(|E)> e1 => v1
         ; debug(!"let var: ")
-        ; <eval(|[(x, v1) | E])> e2 => v2
+        ; <eval(|[Bind(x, v1) | E])> e2 => v2
         
   eval(|E) :
     e -> <fail>
@@ -276,9 +289,9 @@ rules // eval expressions
 rules
 
   lookup(|x) :
-    [(x, v) | E] -> v
+    [Bind(x, v) | E] -> v
   lookup(|x) :
-    [(y, _) | E] -> <lookup(|x)> E
+    [Bind(y, _) | E] -> <lookup(|x)> E
     where <not(eq)>(x, y)
       
   
