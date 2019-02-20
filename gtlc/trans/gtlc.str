@@ -23,4 +23,12 @@ rules // Debugging
     with
       filename := <guarantee-extension(|"aterm")> path
     ; result   := <debug(!"a: "); eval; debug(!"b: ")> node
+
+    
+  eval-program-pp:
+    (node, _, _, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"eval.glc")> path
+    ; value    := <debug(!"a: "); eval; debug(!"b: ")> node
+    ; result   := <pp-gtlc-string> value
     

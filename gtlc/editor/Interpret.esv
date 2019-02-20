@@ -8,5 +8,7 @@ menus
 
   menu: "Run" (openeditor)
 
+    action: "Run"     = eval-program-pp (source)
     action: "Run AST" = eval-program (source)
+
     
