@@ -1,1 +1,1 @@
-(\x . (x : bool)) true
+(\x . x) (true : ? -> ?)
