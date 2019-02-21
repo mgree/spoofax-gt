@@ -1,1 +1,1 @@
-DynV(BoolV(True()))
+Expr(App(LamD("x", Var("x")), True()))

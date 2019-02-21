@@ -5,55 +5,6 @@ imports signatures/gtlc-core-sig
 imports signatures/types-sig
 imports signatures/values-sig
 imports elaborate
-
-// MMG: why is this necessary for my errors to go away? are the errors benign?
-
-// what errors do you get? 
-//signature // Bool is not a built-in type
-//  sorts Bool
-//  constructors
-//    True : Bool
-//    False : Bool
-
-//// if we make a syntax for values, we can pretty-print results
-//signature
-//  sorts V
-//  constructors 
-//    UnitV     : V
-//    BoolV     : Bool -> V
-//    FunV      : ID * ExprC * Env -> V
-//    FunProxyV : V * Type * Type * Type * Type -> V // v : T11->T12 => T21->T22
-//    RefV      : String -> V
-//    RefProxyV : V * Type * Type -> V // v : Ref T1 => Ref T2
-//    DynV      : V -> V
-//    BlameV    : String * V * Type * Type -> V
-//    StuckV    : ExprC * Env -> V
-
-// imported from signatures/gtlc-core-sig
-//signature // core
-//  sorts ExprC constructors
-//	AscrC  : ExprC * Type -> ExprC
-//	CastC  : ExprC * Type * Type -> ExprC
-//    VarC   : ID -> ExprC
-//    UnitC  : ExprC
-//    TrueC  : ExprC
-//    FalseC : ExprC
-//    IfC    : ExprC * ExprC * ExprC -> ExprC
-//    AppC   : ExprC * ExprC -> ExprC
-//	LamC   : ID * Type * ExprC -> ExprC
-//	RefC   : ExprC -> ExprC
-//	DerefC : ExprC -> ExprC
-//	SetC   : ExprC * ExprC -> ExprC
-//	SeqC   : ExprC * ExprC -> ExprC
-//	LetC   : ID * Type * ExprC * ExprC -> ExprC
-//	
-//  imported from signatures/types-sig
-//  sorts Type constructors
-//    UnitT : Type
-//	BoolT : Type
-//	DynT  : Type
-//	FunT  : Type * Type -> Type  
-//	RefT  : Type -> Type
     
 rules // eval programs
 
@@ -91,6 +42,7 @@ rules // casting
     AscrC(e, _) -> <eval(|E)> e // todo: check type // MMG: no actual need---the type checker has done it. CastC will do the checks
     where debug(!"eval: ")
     // so should we remove ascriptions from the program during cast insertion?
+    // probably better to keep them around---it's handy to be able to make assertions
     
   eval(|E) : 
     CastC(e, T, S) -> <castc(|E)> (<eval(|E)>e, T, S)
@@ -115,6 +67,24 @@ rules // casting
   castc(|E) :
     (DynV(BoolV(b)), DynT(), BoolT()) -> BoolV(b)      
     where debug(!"castc: ")
+  
+  castc(|E) :
+    (PairV(v1, v2), PairT(T1, T2), DynT()) -> DynV(PairV(v1_dyn, v2_dyn))
+    where debug(!"castc: ")
+        ; <castc(|E)> (v1, T1, DynT()) => v1_dyn
+        ; <castc(|E)> (v2, T2, DynT()) => v2_dyn
+        
+  castc(|E) :
+    (DynV(PairV(v1, v2)), DynT(), PairT(T1, T2)) -> PairV(v1_cast, v2_cast)
+    where debug(!"castc: ")
+        ; <castc(|E)> (v1, DynT(), T1) => v1_cast
+        ; <castc(|E)> (v2, DynT(), T2) => v2_cast
+        
+  castc(|E) :
+    (PairV(v1, v2), PairT(T11, T12), PairT(T21, T22)) -> PairV(v1_cast, v2_cast)
+    where debug(!"castc: ")
+        ; <castc(|E)> (v1, T11, T21) => v1_cast
+        ; <castc(|E)> (v2, T12, T22) => v2_cast
    
   // we use explicit function proxies FunProxyV for 
   //   (a) legibility/debuggability
@@ -177,6 +147,23 @@ rules // eval expressions
   eval(|E) : 
     FalseC() -> BoolV(False())
     where debug(!"eval: ")
+
+  eval(|E) :
+    PairC(e1, e2) -> PairV(v1, v2)
+    where debug(!"eval: ")
+        ; <eval(|E)> e1 => v1
+        ; <eval(|E)> e2 => v2
+        
+  eval(|E) :
+    FstC(e) -> v1
+    where debug(!"eval: ")
+        ; <eval(|E)> e => PairV(v1, v2)
+
+  eval(|E) :
+    SndC(e) -> v2
+    where debug(!"eval: ")
+        ; <eval(|E)> e => PairV(v1, v2)
+
 
   eval(|E) : 
     IfC(e1, e2, e3) -> <ifc(|E)>(<eval(|E)> e1, e2, e3)

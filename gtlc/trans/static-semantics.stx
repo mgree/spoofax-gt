@@ -15,17 +15,24 @@ signature
   sorts Type constructors
     UnitT : Type
 	BoolT : Type
+	PairT : Type * Type -> Type
 	DynT  : Type
 	FunT  : Type * Type -> Type  
 	RefT  : Type -> Type
 
 rules meet : Type * Type -> Type
   
+  meet(UnitT(), UnitT()) = UnitT().
+  
   meet(BoolT(), BoolT()) = BoolT().
   
   meet(DynT(), T) = DynT().
   
   meet(T, DynT()) = DynT().
+  
+  meet(PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    meet(T11, T21) == T1,
+    meet(T12, T22) == T2.
   
   meet(FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
     meet(T11,T21) == T1,
@@ -37,12 +44,18 @@ rules meet : Type * Type -> Type
 rules consistent : Type * Type
 
 //  consistent(T1, T2) :- {S} meet(T1, T2) == S.
+  
+  consistent(UnitT(), UnitT()).
     
   consistent(BoolT(), BoolT()).
   
   consistent(DynT(), T).
   
   consistent(T, DynT()).
+  
+  consistent(PairT(T11, T12), PairT(T21, T22)) :-
+    consistent(T11,T21),
+    consistent(T12,T22).
   
   consistent(FunT(T11,T12), FunT(T21,T22)) :-
     consistent(T11,T21),
@@ -59,6 +72,9 @@ signature // core
     UnitC  : ExprC
     TrueC  : ExprC
     FalseC : ExprC
+    PairC  : ExprC * ExprC -> ExprC   
+    FstC   : ExprC -> ExprC
+    SndC   : ExprC -> ExprC 
     IfC    : ExprC * ExprC * ExprC -> ExprC
     AppC   : ExprC * ExprC -> ExprC
 	LamC   : ID * Type * ExprC -> ExprC
@@ -87,6 +103,16 @@ rules typeOfExprC : scope * ExprC -> Type
   typeOfExprC(s, TrueC()) = BoolT().
   
   typeOfExprC(s, FalseC()) = BoolT().
+  
+  typeOfExprC(s, PairC(e1, e2)) = PairT(T1, T2) :-
+    typeOfExprC(s, e1) == T1,
+    typeOfExprC(s, e2) == T2.
+    
+  typeOfExprC(s, FstC(e)) = T1 :- {T2}
+    typeOfExprC(s, e) == PairT(T1, T2).
+
+  typeOfExprC(s, SndC(e)) = T2 :- {T1}
+    typeOfExprC(s, e) == PairT(T1, T2).
   
   typeOfExprC(s, IfC(e1,e2,e3)) = T :-
   	typeOfExprC(s, e1) == BoolT(),
@@ -137,6 +163,9 @@ signature // source
     Unit  : Expr
     True  : Expr
     False : Expr
+    Pair  : Expr * Expr -> Expr
+    Fst   : Expr -> Expr
+    Snd   : Expr -> Expr
     If    : Expr * Expr * Expr -> Expr
     App   : Expr * Expr -> Expr
 	Lam   : ID * Type * Expr -> Expr
@@ -200,6 +229,26 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   typeOfExpr(s, True()) = (TrueC(), BoolT()).
   
   typeOfExpr(s, False()) = (FalseC(), BoolT()).
+
+  typeOfExpr(s, Pair(e1, e2)) = (PairC(e1', e2'), PairT(T1, T2)) :-
+    typeOfExpr(s, e1) == (e1', T1),
+    typeOfExpr(s, e2) == (e2', T2).
+  
+  typeOfExpr(s, Fst(e)) = (FstC(e''), T1) :- {e' T}
+    typeOfExpr(s, e) == (e', T),
+    fst(e', T) == (e'', T1).
+    
+    rules fst : ExprC * Type -> ExprC * Type
+      fst(e, DynT()) = (cast(e, DynT(), PairT(DynT(), DynT())), DynT()).
+      fst(e, PairT(T1, T2)) = (e, T1).
+ 
+   typeOfExpr(s, Snd(e)) = (SndC(e''), T2) :- {e' T}
+    typeOfExpr(s, e) == (e', T),
+    snd(e', T) == (e'', T2).
+    
+    rules snd : ExprC * Type -> ExprC * Type
+      snd(e, DynT()) = (cast(e, DynT(), PairT(DynT(), DynT())), DynT()).
+      snd(e, PairT(T1, T2)) = (e, T2).   
   
   typeOfExpr(s, If(e1,e2,e3)) = 
     (IfC(cast(e1',T1,BoolT()),cast(e2',T2,T),cast(e3',T3,T)), T) 

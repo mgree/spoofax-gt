@@ -8,6 +8,8 @@ sorts Type context-free syntax
 
   Type.BoolT = <bool>
   
+  Type.PairT = <(<Type>, <Type>)>
+  
   Type.DynT  = <?>
   
   Type.FunT  = [[Type] -> [Type]] { right }

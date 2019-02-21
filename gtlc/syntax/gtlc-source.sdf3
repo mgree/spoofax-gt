@@ -13,6 +13,11 @@ sorts Expr context-free syntax
   Expr.True  = <true>
   
   Expr.False = <false>
+
+  Expr.Pair = <(<Expr>, <Expr>)>
+  
+  Expr.Fst = <fst <Expr>>
+  Expr.Snd = <snd <Expr>>
   
   Expr.If = <
     if <Expr> then 
@@ -53,6 +58,7 @@ sorts Expr context-free syntax
 context-free priorities
 
     Expr.App
+  > {Expr.Fst Expr.Snd}
   > {Expr.LamD Expr.Lam}
   > {Expr.Ref Expr.Deref}
   > Expr.Set

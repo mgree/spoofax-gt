@@ -16,6 +16,11 @@ sorts ExprC context-free syntax
   
   ExprC.FalseC = <false>
   
+  ExprC.PairC = <(<ExprC>, <ExprC>)>
+  
+  ExprC.FstC = <fst <ExprC>>
+  ExprC.SndC = <snd <ExprC>>
+  
   ExprC.IfC = <
     if <ExprC> then 
       <ExprC> 
@@ -48,6 +53,7 @@ sorts ExprC context-free syntax
 context-free priorities
 
     ExprC.AppC
+  > {ExprC.FstC ExprC.SndC}
   > ExprC.CastC
   > ExprC.LamC
   > {ExprC.RefC ExprC.DerefC}

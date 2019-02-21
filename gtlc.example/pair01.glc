@@ -1,0 +1,2 @@
+let x = (true, unit) in
+if fst x then snd x else unit
