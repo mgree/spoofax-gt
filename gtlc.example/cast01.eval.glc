@@ -7,7 +7,4 @@ core
 
 evaluates to
 
-  stuck (\x : ?. if x : ? => bool then
-    false
-  else
-    true) ((\y : ?. y) : ? -> ? => ?) : bool with
+  blame "error" dyn fun(y, y, [ ]) got ? expected bool

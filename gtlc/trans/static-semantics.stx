@@ -88,17 +88,14 @@ rules typeOfExprC : scope * ExprC -> Type
   
   typeOfExprC(s, FalseC()) = BoolT().
   
-  typeOfExprC(s, IfC(e1,e2,e3)) = T :- {T1 T2 T3}
-  	typeOfExprC(s, e1) == T1,
-  	consistent(T1, BoolT()),
-  	typeOfExprC(s, e2) == T2,
-  	typeOfExprC(s, e3) == T3,
-  	meet(T2, T3) == T.
+  typeOfExprC(s, IfC(e1,e2,e3)) = T :-
+  	typeOfExprC(s, e1) == BoolT(),
+  	typeOfExprC(s, e2) == T,
+  	typeOfExprC(s, e3) == T.
 
-  typeOfExprC(s, AppC(e1,e2)) = T :- {T1 T2}
-    typeOfExprC(s, e1) == T1,
-    typeOfExprC(s, e2) == T2,
-    applicationYieldsC(T1, T2) == T.
+  typeOfExprC(s, AppC(e1,e2)) = T2 :- {T1}
+    typeOfExprC(s, e1) == FunT(T1,T2),
+    typeOfExprC(s, e2) == T1.
 
   typeOfExprC(s, LamC(x,T1,e)) = FunT(T1,T2) :- {s_lam}
     new s_lam,
@@ -109,14 +106,14 @@ rules typeOfExprC : scope * ExprC -> Type
   typeOfExprC(s, AscrC(e,T)) = T :-
     typeOfExprC(s, e) == T.
     
-  typeOfExprC(s, CastC(e,T1,T2)) = T :-
-    typeOfExprC(s, e) == T.
+  typeOfExprC(s, CastC(e,T1,T2)) = T2 :-
+    typeOfExprC(s, e) == T1.
     
   typeOfExprC(s, RefC(e)) = RefT(T) :- 
     typeOfExprC(s, e) == T.
     
-  typeOfExprC(s, DerefC(e)) = S :- {T} 
-    typeOfExprC(s, e) == RefT(S).
+  typeOfExprC(s, DerefC(e)) = T :-
+    typeOfExprC(s, e) == RefT(T).
    
    typeOfExprC(s, SetC(e1, e2)) = UnitT() :- {T}
      typeOfExprC(s, e1) == RefT(T),
@@ -126,22 +123,14 @@ rules typeOfExprC : scope * ExprC -> Type
      typeOfExprC(s, e1) == S,
      typeOfExprC(s, e2) == T.
      
-   typeOfExprC(s, LetC(x, T, e1, e2)) = S :- {s_let}
-    typeOfExprC(s, e1) == T,
+   typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
+    typeOfExprC(s, e1) == T1,
     new s_let,
     s_let -P-> s,
-    s_let -> Var{x@x} with typeOfVar T,
-    typeOfExprC(s_let, e2) == S.
+    s_let -> Var{x@x} with typeOfVar T1,
+    typeOfExprC(s_let, e2) == T2.
      
-
-rules applicationYieldsC : Type * Type -> Type
-  
-  applicationYieldsC(DynT(), T) = DynT().
-  
-  applicationYieldsC(FunT(T1,T2), T1') = T2 :-
-    consistent(T1, T1').
-
-signature // sugar
+signature // source
   sorts Expr constructors
 	Ascr  : Expr * Type -> Expr
     Var   : ID -> Expr

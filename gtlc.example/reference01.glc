@@ -1,5 +1,3 @@
 core 
 
-let x : ref bool = ref true
- in x := false; !x
-  
+let x : ref bool = ref true in x := false; !x
