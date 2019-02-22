@@ -66,23 +66,28 @@ rules consistent : Type * Type
     
 signature // core
   sorts ExprC constructors
-	AscrC  : ExprC * Type -> ExprC
-	CastC  : ExprC * Type * Type -> ExprC
-    VarC   : ID -> ExprC
-    UnitC  : ExprC
-    TrueC  : ExprC
-    FalseC : ExprC
-    PairC  : ExprC * ExprC -> ExprC   
-    FstC   : ExprC -> ExprC
-    SndC   : ExprC -> ExprC 
-    IfC    : ExprC * ExprC * ExprC -> ExprC
-    AppC   : ExprC * ExprC -> ExprC
-	LamC   : ID * Type * ExprC -> ExprC
-	RefC   : ExprC -> ExprC
-	DerefC : ExprC -> ExprC
-	SetC   : ExprC * ExprC -> ExprC
-	SeqC   : ExprC * ExprC -> ExprC
-	LetC   : ID * Type * ExprC * ExprC -> ExprC
+	AscrC   : ExprC * Type -> ExprC
+	CastC   : ExprC * Type * Type -> ExprC
+    VarC    : ID -> ExprC
+    UnitC   : ExprC
+    TrueC   : ExprC
+    FalseC  : ExprC
+    PairC   : ExprC * ExprC -> ExprC   
+    FstC    : ExprC -> ExprC
+    SndC    : ExprC -> ExprC 
+    IsUnitC : ExprC -> ExprC
+    IsBoolC : ExprC -> ExprC
+    IsPairC : ExprC -> ExprC
+    IsRefC  : ExprC -> ExprC
+    IsFunC  : ExprC -> ExprC
+    IfC     : ExprC * ExprC * ExprC -> ExprC
+    AppC    : ExprC * ExprC -> ExprC
+	LamC    : ID * Type * ExprC -> ExprC
+	RefC    : ExprC -> ExprC
+	DerefC  : ExprC -> ExprC
+	SetC    : ExprC * ExprC -> ExprC
+	SeqC    : ExprC * ExprC -> ExprC
+	LetC    : ID * Type * ExprC * ExprC -> ExprC
 
 rules programOK : Program
   
@@ -113,6 +118,17 @@ rules typeOfExprC : scope * ExprC -> Type
 
   typeOfExprC(s, SndC(e)) = T2 :- {T1}
     typeOfExprC(s, e) == PairT(T1, T2).
+  
+  typeOfExprC(s, IsUnitC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsBoolC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsPairC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsRefC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsFunC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
   
   typeOfExprC(s, IfC(e1,e2,e3)) = T :-
   	typeOfExprC(s, e1) == BoolT(),
@@ -158,24 +174,29 @@ rules typeOfExprC : scope * ExprC -> Type
      
 signature // source
   sorts Expr constructors
-	Ascr  : Expr * Type -> Expr
-    Var   : ID -> Expr
-    Unit  : Expr
-    True  : Expr
-    False : Expr
-    Pair  : Expr * Expr -> Expr
-    Fst   : Expr -> Expr
-    Snd   : Expr -> Expr
-    If    : Expr * Expr * Expr -> Expr
-    App   : Expr * Expr -> Expr
-	Lam   : ID * Type * Expr -> Expr
-	LamD  : ID * Expr -> Expr
-	Let   : ID * Type * Expr * Expr -> Expr
-	LetD  : ID * Expr * Expr -> Expr
-	Ref   : Expr -> Expr
-	Deref : Expr -> Expr
-	Set   : Expr * Expr -> Expr
-	Seq   : Expr * Expr -> Expr
+	Ascr   : Expr * Type -> Expr
+    Var    : ID -> Expr
+    Unit   : Expr
+    True   : Expr
+    False  : Expr
+    Pair   : Expr * Expr -> Expr
+    Fst    : Expr -> Expr
+    Snd    : Expr -> Expr
+    IsUnit : Expr -> Expr
+    IsBool : Expr -> Expr
+    IsPair : Expr -> Expr
+    IsRef  : Expr -> Expr
+    IsFun  : Expr -> Expr
+    If     : Expr * Expr * Expr -> Expr
+    App    : Expr * Expr -> Expr
+	Lam    : ID * Type * Expr -> Expr
+	LamD   : ID * Expr -> Expr
+	Let    : ID * Type * Expr * Expr -> Expr
+	LetD   : ID * Expr * Expr -> Expr
+	Ref    : Expr -> Expr
+	Deref  : Expr -> Expr
+	Set    : Expr * Expr -> Expr
+	Seq    : Expr * Expr -> Expr
 	
   namespaces
     Var : string
@@ -249,6 +270,17 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
     rules snd : ExprC * Type -> ExprC * Type
       snd(e, DynT()) = (cast(e, DynT(), PairT(DynT(), DynT())), DynT()).
       snd(e, PairT(T1, T2)) = (e, T2).   
+
+  typeOfExpr(s, IsUnit(e)) = (IsUnitC(cast(e', T, DynT())), BoolT()) :-
+    typeOfExpr(s, e) == (e', T).
+  typeOfExpr(s, IsBool(e)) = (IsBoolC(cast(e', T, DynT())), BoolT()) :-
+    typeOfExpr(s, e) == (e', T).
+  typeOfExpr(s, IsPair(e)) = (IsPairC(cast(e', T, DynT())), BoolT()) :-
+    typeOfExpr(s, e) == (e', T).
+  typeOfExpr(s, IsRef(e)) = (IsRefC(cast(e', T, DynT())), BoolT()) :-
+    typeOfExpr(s, e) == (e', T).
+  typeOfExpr(s, IsFun(e)) = (IsFunC(cast(e', T, DynT())), BoolT()) :-
+    typeOfExpr(s, e) == (e', T).
   
   typeOfExpr(s, If(e1,e2,e3)) = 
     (IfC(cast(e1',T1,BoolT()),cast(e2',T2,T),cast(e3',T3,T)), T) 

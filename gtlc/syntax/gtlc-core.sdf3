@@ -20,6 +20,11 @@ sorts ExprC context-free syntax
   
   ExprC.FstC = <fst <ExprC>>
   ExprC.SndC = <snd <ExprC>>
+  ExprC.IsUnitC = <isunit <ExprC>>
+  ExprC.IsBoolC = <isbool <ExprC>>
+  ExprC.IsPairC = <ispair <ExprC>>
+  ExprC.IsRefC = <isref <ExprC>>
+  ExprC.IsFunC = <isfun <ExprC>>
   
   ExprC.IfC = <
     if <ExprC> then 
@@ -53,7 +58,7 @@ sorts ExprC context-free syntax
 context-free priorities
 
     ExprC.AppC
-  > {ExprC.FstC ExprC.SndC}
+  > {ExprC.FstC ExprC.SndC ExprC.IsUnitC ExprC.IsBoolC ExprC.IsPairC ExprC.IsRefC ExprC.IsFunC}
   > ExprC.CastC
   > ExprC.LamC
   > {ExprC.RefC ExprC.DerefC}

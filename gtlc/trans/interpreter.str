@@ -164,6 +164,49 @@ rules // eval expressions
     where debug(!"eval: ")
         ; <eval(|E)> e => PairV(v1, v2)
 
+  eval(|E) :
+    IsUnitC(e) -> <isunitc(|E)>(<eval(|E)> e)
+    
+    isunitc(|E) :
+      DynV(UnitV()) -> BoolV(True())
+    isunitc(|E) :
+      DynV(_)       -> BoolV(False())
+
+  eval(|E) :
+    IsBoolC(e) -> <isboolc(|E)>(<eval(|E)> e)
+    
+    isboolc(|E) :
+      DynV(BoolV(_)) -> BoolV(True())
+    isboolc(|E) :
+      DynV(_)        -> BoolV(False())
+  
+  eval(|E) :
+    IsPairC(e) -> <ispairc(|E)>(<eval(|E)> e)
+    
+    ispairc(|E) :
+      DynV(PairV(_,_)) -> BoolV(True())
+    ispairc(|E) :
+      DynV(_)          -> BoolV(False())    
+
+  eval(|E) :
+    IsRefC(e) -> <isrefc(|E)>(<eval(|E)> e)
+    
+    isrefc(|E) :
+      DynV(RefV(_)) -> BoolV(True())
+    isrefc(|E) :
+      DynV(RefProxyV(_,_,_)) -> BoolV(True())
+    isrefc(|E) :
+      DynV(_)       -> BoolV(False())
+
+  eval(|E) :
+    IsFunC(e) -> <isfunc(|E)>(<eval(|E)> e)
+    
+    isfunc(|E) :
+      DynV(FunV(_,_,_)) -> BoolV(True())
+    isfunc(|E) :
+      DynV(FunProxyV(_,_,_,_,_)) -> BoolV(True())
+    isfunc(|E) :
+      DynV(_)       -> BoolV(False())
 
   eval(|E) : 
     IfC(e1, e2, e3) -> <ifc(|E)>(<eval(|E)> e1, e2, e3)
