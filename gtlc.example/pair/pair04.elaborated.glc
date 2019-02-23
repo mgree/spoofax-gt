@@ -1,0 +1,7 @@
+let f = \x. x
+ in fst f (true, false)
+
+elaborate as
+
+let f : ? -> ? = \x : ?. x
+ in fst (f ((true, false) : (bool, bool) => ?) : ? => (?, ?)) : ?

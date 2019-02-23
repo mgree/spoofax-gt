@@ -1,0 +1,8 @@
+core
+
+  let x : ? = true : bool => ?
+   in !x : ? => ref ? : ?
+
+evaluates to
+
+  blame "deref error" true got ? expected ?

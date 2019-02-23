@@ -1,0 +1,5 @@
+snd fst ((true, unit), false)
+
+elaborate as
+
+snd fst ((true, unit), false) : unit
