@@ -4,6 +4,8 @@ sorts Type context-free syntax
   
   Type       = <(<Type>)> { bracket }
   
+  Type.FunT  = [[Type] -> [Type]] { right }
+  
   Type.UnitT = <unit>
 
   Type.BoolT = <bool>
@@ -11,8 +13,6 @@ sorts Type context-free syntax
   Type.PairT = <(<Type>, <Type>)>
   
   Type.DynT  = <?>
-  
-  Type.FunT  = [[Type] -> [Type]] { right }
   
   Type.RefT  = <ref <Type>>
   

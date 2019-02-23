@@ -2,16 +2,26 @@ module Common
 
 lexical syntax
 
-  ID             = [a-zA-Z] [a-zA-Z0-9]* 
+  ID = [a-zA-Z] [a-zA-Z0-9]* 
+  
+lexical restrictions
+
+  ID -/- [a-zA-Z0-9\_]
+  
+lexical syntax 
+
   INT            = "-"? [0-9]+ 
   STRING         = "\"" StringChar* "\"" 
   StringChar     = ~[\"\n] 
   StringChar     = "\\\"" 
   StringChar     = BackSlashChar 
   BackSlashChar  = "\\" 
+  
   LAYOUT         = [\ \t\n\r] 
+  
   CommentChar    = [\*] 
   LAYOUT         = "/*" InsideComment* "*/" 
+  
   InsideComment  = ~[\*] 
   InsideComment  = CommentChar 
   LAYOUT         = "//" ~[\n\r]* NewLineEOF 
@@ -25,7 +35,6 @@ lexical restrictions
   
   CommentChar   -/- [\/]
   INT           -/- [0-9]
-  ID            -/- [a-zA-Z0-9\_]
   
   // EOF may not be followed by any char
   

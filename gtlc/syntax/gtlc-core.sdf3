@@ -2,28 +2,36 @@ module gtlc-core
 
 imports Common types
 
-sorts ExprC context-free syntax
-  
-  ExprC        = <(<ExprC>)> { bracket }
-  
-  ExprC.AscrC  = <<ExprC> : <Type>>
-  
-  ExprC.CastC  = [[ExprC] : [Type] => [Type]]
-
-  ExprC.UnitC  = <unit>
-  
-  // booleans
-
-  ExprC.TrueC  = <true>
-  
-  ExprC.FalseC = <false>
-  
+sorts ExprC context-free syntax 
+  ExprC       = <(<ExprC>)> { bracket }
+  ExprC.VarC  = <<ID>>
+  ExprC.AppC  = <<ExprC> <ExprC>> {left}
+  ExprC.LamC  = <\\<ID> : <Type>. <ExprC>>
+  ExprC.LetC  = <
+    let <ID> : <Type> = <ExprC> in
+    <ExprC>
+  >
+context-free priorities    
+  ExprC.AppC > ExprC.LamC > ExprC.LetC
+context-free syntax  // booleans
+  ExprC.TrueC  = <true> 
+  ExprC.FalseC = <false> 
   ExprC.IfC = <
     if <ExprC> then 
       <ExprC> 
     else 
       <ExprC>
   >
+context-free priorities 
+  ExprC.AppC > ExprC.IfC > ExprC.LamC
+  
+context-free syntax 
+  
+  ExprC.AscrC  = <<ExprC> : <Type>>
+  
+  ExprC.CastC  = [[ExprC] : [Type] => [Type]]
+
+  ExprC.UnitC  = <unit>
   
   // pairs 
   
@@ -36,19 +44,6 @@ sorts ExprC context-free syntax
   ExprC.IsPairC = <ispair <ExprC>>
   ExprC.IsRefC  = <isref <ExprC>>
   ExprC.IsFunC  = <isfun <ExprC>>
-  
-  // bindings
-    
-  ExprC.VarC  = <<ID>>
- 
-  ExprC.AppC  = <<ExprC> <ExprC>> {left}
-    
-  ExprC.LamC  = <\\<ID> : <Type>. <ExprC>>
-  
-  ExprC.LetC  = <
-    let <ID> : <Type> = <ExprC> in
-    <ExprC>
-  >
   
   // references
   
