@@ -16,13 +16,13 @@ sorts Expr context-free syntax
 
   Expr.Pair = <(<Expr>, <Expr>)>
   
-  Expr.Fst = <fst <Expr>>
-  Expr.Snd = <snd <Expr>>
+  Expr.Fst    = <fst <Expr>>
+  Expr.Snd    = <snd <Expr>>
   Expr.IsUnit = <isunit <Expr>>
   Expr.IsBool = <isbool <Expr>>
   Expr.IsPair = <ispair <Expr>>
-  Expr.IsRef = <isref <Expr>>
-  Expr.IsFun = <isfun <Expr>>
+  Expr.IsRef  = <isref <Expr>>
+  Expr.IsFun  = <isfun <Expr>>
   
   Expr.If = <
     if <Expr> then 
@@ -69,7 +69,7 @@ context-free priorities
   > Expr.Set
   > Expr.If
   > Expr.Seq
-  > Expr.Let
+  > {Expr.Let Expr.LetD}
   > Expr.Ascr
   
 template options
