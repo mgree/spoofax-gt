@@ -1,1 +1,1 @@
-Expr(Lam("x", Var("x")))
+Expr(App(Lam("x", BoolT(), Var("x")), True()))

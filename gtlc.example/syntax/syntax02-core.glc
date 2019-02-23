@@ -1,0 +1,3 @@
+core 
+
+(\x:bool. x) true
