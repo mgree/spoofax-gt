@@ -1,8 +1,11 @@
 core
 
   let x : ref bool = ref true in
-  x := false;
-  !x
+  x := if !x then
+    false
+  else
+    true;
+  !x : bool
 
 evaluates to
 

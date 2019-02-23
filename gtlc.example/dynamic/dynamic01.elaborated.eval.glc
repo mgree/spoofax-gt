@@ -1,0 +1,10 @@
+core
+
+  (\x : ?. if (x : ? => bool) then
+    true
+  else
+    false) (false : bool => ?) : bool
+
+evaluates to
+
+  false

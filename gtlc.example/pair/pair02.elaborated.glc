@@ -1,13 +1,13 @@
-let x : ? = (true, unit)
- in if fst x then
-   snd x
- else
-   unit
+let x : ? = (true, unit) in
+if fst x then
+  snd x
+else
+  unit
 
 elaborate as
 
-let x : ? = (true, unit) : (bool, unit) => ?
- in if (fst x : ? => (?, ?)) : ? => bool then
-   snd x : ? => (?, ?)
- else
-   unit : unit => ? : ?
+let x : ? = (true, unit) : (bool, unit) => ? in
+if (fst (x : ? => (?, ?)) : ? => bool) then
+  snd (x : ? => (?, ?))
+else
+  (unit : unit => ?) : ?

@@ -1,7 +1,7 @@
-let x : ? = true
- in !x
+let x : ? = true in
+!x
 
 elaborate as
 
-let x : ? = true : bool => ?
- in !x : ? => ref ? : ?
+let x : ? = true : bool => ? in
+!(x : ? => ref ?) : ?

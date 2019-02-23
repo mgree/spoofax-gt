@@ -1,0 +1,13 @@
+let x : bool = true
+ in if x then
+   false
+ else
+   true
+
+elaborate as
+
+let x : bool = true
+ in if x then
+   false
+ else
+   true : bool

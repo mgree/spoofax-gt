@@ -1,0 +1,8 @@
+core
+
+  let x : bool = true
+   in x : bool
+
+evaluates to
+
+  true

@@ -1,2 +1,2 @@
 let f = \x. x
- in fst f (true, false)
+ in fst (f (true, false))

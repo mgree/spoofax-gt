@@ -1,6 +1,6 @@
 core
 
   let x : ? = true : bool => ?
-   in !x : ? => ref ? : ?
+   in !(x : ? => ref ?) : ?
   
   

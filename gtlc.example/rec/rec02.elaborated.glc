@@ -1,0 +1,35 @@
+let Y = \f. (\x. f (x x)) \x. \y. f (x x) y in
+let not = \b. if b then
+  false
+else
+  true in
+let nil : ? = unit in
+let cons : ? -> ? -> ? = \h. \t. (h, t) in
+let isnil = \l. isunit l in
+let iscons = \l. ispair l in
+let head = \l. fst l in
+let tail = \l. snd l in
+let map = Y \map. \f. \l. if isnil l then
+  nil
+else
+  cons (f (head l)) (map f (tail l)) in
+map not (cons true (cons false nil))
+
+elaborate as
+
+let Y : ? -> ? = \f : ?. (\x : ?. (f : ? => ? -> ?) (x : ? => ? -> ? x)) (\x : ?. \y : ?. ((f : ? => ? -> ?) (x : ? => ? -> ? x) : ? => ? -> ?) y : ? -> ? -> ? => ?) in
+let not : ? -> bool = \b : ?. if (b : ? => bool) then
+  false
+else
+  true in
+let nil : ? = unit : unit => ? in
+let cons : ? -> ? -> ? = \h : ?. \t : ?. (h, t) : ? -> ? -> (?, ?) => ? -> ? -> ? in
+let isnil : ? -> bool = \l : ?. isunit l in
+let iscons : ? -> bool = \l : ?. ispair l in
+let head : ? -> ? = \l : ?. fst (l : ? => (?, ?)) in
+let tail : ? -> ? = \l : ?. snd (l : ? => (?, ?)) in
+let map : ? = Y (\map : ?. \f : ?. \l : ?. if isnil l then
+  nil
+else
+  cons (f : ? => ? -> ? (head l)) (map : ? => ? -> ? f : ? => ? -> ? (tail l)) : ? -> ? -> ? -> ? => ?) in
+((map : ? => (? -> bool) -> ?) not : ? => ? -> ?) (cons (true : bool => ?) (cons (false : bool => ?) nil)) : ?

@@ -1,0 +1,7 @@
+let x = true
+ in x
+
+elaborate as
+
+let x : bool = true
+ in x : bool

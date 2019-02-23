@@ -1,0 +1,7 @@
+core
+
+  snd fst ((true, unit), false) : unit
+
+evaluates to
+
+  unit

@@ -1,0 +1,10 @@
+core
+
+  (\x : ?. if (x : ? => bool) then
+    false
+  else
+    true) (\y : ?. y : ? -> ? => ?) : bool
+
+evaluates to
+
+  blame "error" dyn fun(y, y, [ ]) got ? expected bool

@@ -1,0 +1,7 @@
+core
+
+  (\x : ?. x) (true : bool => ?) : ? => bool : bool
+
+evaluates to
+
+  true
