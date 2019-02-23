@@ -99,15 +99,27 @@ rules programOK : Program
     programOK(ExprC(e)).
     
 rules typeOfExprC : scope * ExprC -> Type
-
-  typeOfExprC(s, VarC(x)) = T :- {p d}
-    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+    
+  typeOfExprC(s, AscrC(e,T)) = T :-
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, CastC(e,T1,T2)) = T2 :-
+    typeOfExprC(s, e) == T1.
   
   typeOfExprC(s, UnitC()) = UnitT().
+  
+  // booleans
   
   typeOfExprC(s, TrueC()) = BoolT().
   
   typeOfExprC(s, FalseC()) = BoolT().
+  
+  typeOfExprC(s, IfC(e1,e2,e3)) = T :-
+  	typeOfExprC(s, e1) == BoolT(),
+  	typeOfExprC(s, e2) == T,
+  	typeOfExprC(s, e3) == T.
+  
+  // pairs 
   
   typeOfExprC(s, PairC(e1, e2)) = PairT(T1, T2) :-
     typeOfExprC(s, e1) == T1,
@@ -129,11 +141,8 @@ rules typeOfExprC : scope * ExprC -> Type
     typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsFunC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
-  
-  typeOfExprC(s, IfC(e1,e2,e3)) = T :-
-  	typeOfExprC(s, e1) == BoolT(),
-  	typeOfExprC(s, e2) == T,
-  	typeOfExprC(s, e3) == T.
+    
+  // functions
 
   typeOfExprC(s, AppC(e1,e2)) = T2 :- {T1}
     typeOfExprC(s, e1) == FunT(T1,T2),
@@ -144,12 +153,20 @@ rules typeOfExprC : scope * ExprC -> Type
     typeOfExprC(s_lam, e) == T2,
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
+  
+   // bindings
+     
+   typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
+    typeOfExprC(s, e1) == T1,
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T1,
+    typeOfExprC(s_let, e2) == T2.
+
+  typeOfExprC(s, VarC(x)) = T :- {p d}
+    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
     
-  typeOfExprC(s, AscrC(e,T)) = T :-
-    typeOfExprC(s, e) == T.
-    
-  typeOfExprC(s, CastC(e,T1,T2)) = T2 :-
-    typeOfExprC(s, e) == T1.
+  // references
     
   typeOfExprC(s, RefC(e)) = RefT(T) :- 
     typeOfExprC(s, e) == T.
@@ -164,13 +181,6 @@ rules typeOfExprC : scope * ExprC -> Type
    typeOfExprC(s, SeqC(e1, e2)) = T :- {S}
      typeOfExprC(s, e1) == S,
      typeOfExprC(s, e2) == T.
-     
-   typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
-    typeOfExprC(s, e1) == T1,
-    new s_let,
-    s_let -P-> s,
-    s_let -> Var{x@x} with typeOfVar T1,
-    typeOfExprC(s_let, e2) == T2.
      
 signature // source
   sorts Expr constructors
@@ -237,19 +247,34 @@ rules insertCasts : Program -> Program
     new s,
     typeOfExpr(s, e1) == (e2, T).
 
+rules cast : ExprC * Type * Type -> ExprC
+  
+  cast(e, T, T) = e.
+
+  cast(e, T1, T2) = CastC(e, T1, T2) :- consistent(T1, T2).
+  
 rules typeOfExpr : scope * Expr -> ExprC * Type
 
   typeOfExpr(s, Ascr(e,T)) = (cast(e',T',T),T) :-
     typeOfExpr(s, e) == (e',T').
-
-  typeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
-    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
   
   typeOfExpr(s, Unit()) = (UnitC(), UnitT()).
+  
+  // booleans
   
   typeOfExpr(s, True()) = (TrueC(), BoolT()).
   
   typeOfExpr(s, False()) = (FalseC(), BoolT()).
+  
+  typeOfExpr(s, If(e1,e2,e3)) = 
+    (IfC(cast(e1',T1,BoolT()),cast(e2',T2,T),cast(e3',T3,T)), T) 
+    :-
+  	  typeOfExpr(s, e1) == (e1', T1),
+  	  typeOfExpr(s, e2) == (e2', T2),
+  	  typeOfExpr(s, e3) == (e3', T3),
+  	  meet(T2, T3) == T.
+  	 
+  // pairs
 
   typeOfExpr(s, Pair(e1, e2)) = (PairC(e1', e2'), PairT(T1, T2)) :-
     typeOfExpr(s, e1) == (e1', T1),
@@ -281,38 +306,17 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
     typeOfExpr(s, e) == (e', T).
   typeOfExpr(s, IsFun(e)) = (IsFunC(cast(e', T, DynT())), BoolT()) :-
     typeOfExpr(s, e) == (e', T).
-  
-  typeOfExpr(s, If(e1,e2,e3)) = 
-    (IfC(cast(e1',T1,BoolT()),cast(e2',T2,T),cast(e3',T3,T)), T) 
-    :-
-  	  typeOfExpr(s, e1) == (e1', T1),
-  	  typeOfExpr(s, e2) == (e2', T2),
-  	  typeOfExpr(s, e3) == (e3', T3),
-  	  meet(T2, T3) == T.
-
-  typeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
-    typeOfExpr(s, e1) == (e1', T1),
-    typeOfExpr(s, e2) == (e2', T2),
-    app(e1', e2', T1, T2) == (e, T).
-
-    rules app : ExprC * ExprC * Type * Type -> ExprC * Type
-  
-      app(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). // CApp1
-      
-      app(e1, e2, FunT(T1, T2), T1') = (AppC(e1, cast(e2, T1', T1)), T2) :- // CApp2 (when T1' != T1)/ CApp3
-        consistent(T1', T1).
+        
+  // bindings
+        
+  typeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
+    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
 
   typeOfExpr(s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
     new s_lam,
     typeOfExpr(s_lam, e) == (e', T2),
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
-
-  typeOfExpr(s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
-    new s_lam,
-    typeOfExpr(s_lam, e) == (e', T2),
-    s_lam -P-> s,
-    s_lam -> Var{x@x} with typeOfVar DynT().
     
   typeOfExpr(s, Let(x, T, e1, e2)) = (LetC(x, T, cast(e1', T1, T), e2'), S) :- {s_let}
     typeOfExpr(s, e1) == (e1', T1),
@@ -328,7 +332,29 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
     s_let -P-> s,
     s_let -> Var{x@x} with typeOfVar T1,
     typeOfExpr(s_let, e2) == (e2', S).
+
+  // functions
+
+  typeOfExpr(s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
+    new s_lam,
+    typeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar DynT().
     
+  typeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
+    typeOfExpr(s, e1) == (e1', T1),
+    typeOfExpr(s, e2) == (e2', T2),
+    app(e1', e2', T1, T2) == (e, T).
+
+    rules app : ExprC * ExprC * Type * Type -> ExprC * Type
+  
+      app(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). // CApp1
+      
+      app(e1, e2, FunT(T1, T2), T1') = (AppC(e1, cast(e2, T1', T1)), T2) :- // CApp2 (when T1' != T1)/ CApp3
+        consistent(T1', T1).
+    
+  // references
+  
   typeOfExpr(s, Ref(e)) = (RefC(e'), RefT(T)) :- 
     typeOfExpr(s, e) == (e', T).
     
@@ -352,13 +378,11 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
         
       assign(e1', RefT(T), e2', S) = (e1', cast(e2', S, T)). // CAssign2 (when S!=T)/CAssign3   
      
+  // sequential composition
+  
   typeOfExpr(s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
     typeOfExpr(s, e1) == (e1', S),
     typeOfExpr(s, e2) == (e2', T). 
     
-rules cast : ExprC * Type * Type -> ExprC
-  
-  cast(e, T, T) = e.
 
-  cast(e, T1, T2) = CastC(e, T1, T2) :- consistent(T1, T2).
 

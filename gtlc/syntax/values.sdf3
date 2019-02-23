@@ -11,16 +11,16 @@ sorts Bool context-free syntax
   
 sorts V context-free syntax 
 
-  V.UnitV = <unit>
-  V.BoolV = <<Bool>>
-  V.PairV = <(<V>, <V>)>
-  V.FunV  = <fun(<ID>, <ExprC>, [<Env>])>
+  V.UnitV     = <unit>
+  V.BoolV     = <<Bool>>
+  V.PairV     = <(<V>, <V>)>
+  V.FunV      = <fun(<ID>, <ExprC>, [<Env>])>
   V.FunProxyV = [[V] : [Type] -> [Type] => [Type] -> [Type]]
-  V.RefV  = <<ID>> 
+  V.RefV      = <<ID>> 
   V.RefProxyV = [[V] : ref [Type] => ref [Type]]
-  V.DynV  = <dyn <V>>
-  V.BlameV = [blame [STRING] [V] got [Type] expected [Type]]
-  V.StuckV = <stuck <ExprC> with <Env>>
+  V.DynV      = <dyn <V>>
+  V.BlameV    = [blame [STRING] [V] got [Type] expected [Type]]
+  V.StuckV    = <stuck <ExprC> with <Env>>
   
 sorts Env context-free syntax
   

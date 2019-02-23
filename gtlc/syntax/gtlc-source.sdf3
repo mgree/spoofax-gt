@@ -9,10 +9,21 @@ sorts Expr context-free syntax
   Expr.Ascr = <<Expr> : <Type>>
 
   Expr.Unit  = <unit>
+  
+  // booleans
 
   Expr.True  = <true>
   
   Expr.False = <false>
+  
+  Expr.If = <
+    if <Expr> then 
+      <Expr> 
+    else 
+      <Expr>
+  >
+  
+  // pairs
 
   Expr.Pair = <(<Expr>, <Expr>)>
   
@@ -24,18 +35,15 @@ sorts Expr context-free syntax
   Expr.IsRef  = <isref <Expr>>
   Expr.IsFun  = <isfun <Expr>>
   
-  Expr.If = <
-    if <Expr> then 
-      <Expr> 
-    else 
-      <Expr>
-  >
+  // functions 
  
   Expr.App  = <<Expr> <Expr>> { left }
     
   Expr.Lam  = <\\<ID> : <Type>. <Expr>>
   
   Expr.LamD = <\\<ID>. <Expr>>
+  
+  // bindings
   
   Expr.Var  = <<ID>>
   
@@ -49,11 +57,13 @@ sorts Expr context-free syntax
      in <Expr>
   >
   
+  // references
+  
   Expr.Ref  = <ref <Expr>>
   
   Expr.Deref = <!<Expr>>
   
-  Expr.Set  = <<Expr> := <Expr>>
+  Expr.Set  = <<Expr> := <Expr>> {non-assoc}
   
   Expr.Seq  = <
     <Expr>; 
@@ -62,13 +72,15 @@ sorts Expr context-free syntax
   
 context-free priorities
 
-    Expr.App
-  > {Expr.Fst Expr.Snd Expr.IsUnit Expr.IsBool Expr.IsPair Expr.IsRef Expr.IsFun}
-  > {Expr.LamD Expr.Lam}
-  > {Expr.Ref Expr.Deref}
+   {Expr.Fst Expr.Snd Expr.IsUnit 
+    Expr.IsBool Expr.IsPair 
+    Expr.IsRef Expr.IsFun
+    Expr.Ref Expr.Deref}
+  > Expr.App
   > Expr.Set
   > Expr.If
   > Expr.Seq
+  > {Expr.LamD Expr.Lam}
   > {Expr.Let Expr.LetD}
   > Expr.Ascr
   
