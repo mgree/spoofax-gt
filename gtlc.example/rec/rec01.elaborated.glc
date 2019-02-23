@@ -1,0 +1,23 @@
+let Y = \f. (\x. f (x x)) \x. \y. f (x x) y
+ in let not = \b. if b then
+   false
+ else
+   true
+  in let loop = Y \loop. \b. if b then
+    true
+  else
+    loop (not b)
+   in loop false
+
+elaborate as
+
+let Y : ? -> ? = \f : ?. (\x : ?. f : ? => ? -> ? (x : ? => ? -> ? x)) ((\x : ?. \y : ?. f : ? => ? -> ? (x : ? => ? -> ? x) : ? => ? -> ? y) : ? -> ? -> ? => ?)
+ in let not : ? -> bool = \b : ?. if b : ? => bool then
+   false
+ else
+   true
+  in let loop : ? = Y ((\loop : ?. \b : ?. if b : ? => bool then
+    true : bool => ?
+  else
+    loop : ? => bool -> ? (not b)) : ? -> ? -> ? => ?)
+   in loop : ? => bool -> ? false : ?

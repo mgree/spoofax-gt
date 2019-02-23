@@ -1,0 +1,5 @@
+core
+
+let x : ? = true
+ in
+  fst (x : ? => (?, ?)) : ? => ?
