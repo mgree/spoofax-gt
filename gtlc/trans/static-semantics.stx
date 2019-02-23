@@ -108,7 +108,7 @@ rules typeOfExprC : scope * ExprC -> Type
   
   typeOfExprC(s, UnitC()) = UnitT().
   
-  // booleans
+rules // booleans
   
   typeOfExprC(s, TrueC()) = BoolT().
   
@@ -142,7 +142,7 @@ rules typeOfExprC : scope * ExprC -> Type
   typeOfExprC(s, IsFunC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
     
-  // functions
+rules // functions
 
   typeOfExprC(s, AppC(e1,e2)) = T2 :- {T1}
     typeOfExprC(s, e1) == FunT(T1,T2),
@@ -154,7 +154,7 @@ rules typeOfExprC : scope * ExprC -> Type
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar T1.
   
-   // bindings
+rules // bindings
      
    typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
     typeOfExprC(s, e1) == T1,
