@@ -39,22 +39,26 @@ sorts Expr context-free syntax
  
   Expr.App  = <<Expr> <Expr>> { left }
     
-  Expr.Lam  = <\\<ID> : <Type>. <Expr>>
+  Expr.Lam  = <
+    \\<ID> : <Type>. <Expr>
+  >
   
-  Expr.LamD = <\\<ID>. <Expr>>
+  Expr.LamD = <
+    \\<ID>. <Expr>
+  >
   
   // bindings
   
   Expr.Var  = <<ID>>
   
   Expr.LetD  = <
-    let <ID> = <Expr> 
-     in <Expr>
+    let <ID> = <Expr> in 
+    <Expr>
   >
   
   Expr.Let  = <
-    let <ID> : <Type> = <Expr> 
-     in <Expr>
+    let <ID> : <Type> = <Expr> in
+    <Expr>
   >
   
   // references

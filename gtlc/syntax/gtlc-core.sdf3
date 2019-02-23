@@ -46,8 +46,8 @@ sorts ExprC context-free syntax
   ExprC.LamC  = <\\<ID> : <Type>. <ExprC>>
   
   ExprC.LetC  = <
-    let <ID> : <Type> = <ExprC> 
-     in <ExprC>
+    let <ID> : <Type> = <ExprC> in
+    <ExprC>
   >
   
   // references
