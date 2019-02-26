@@ -166,7 +166,7 @@ rules // bindings
   typeOfExprC(s, VarC(x)) = T :- {p d}
     typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
     
-  // references
+rules // references
     
   typeOfExprC(s, RefC(e)) = RefT(T) :- 
     typeOfExprC(s, e) == T.
@@ -383,6 +383,44 @@ rules typeOfExpr : scope * Expr -> ExprC * Type
   typeOfExpr(s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
     typeOfExpr(s, e1) == (e1', S),
     typeOfExpr(s, e2) == (e2', T). 
+
+rules thatteSubtype : Type * Type
+
+  thatteSubtype(T, DynT()).
+  
+  thatteSubtype(FunT(T11,T12), FunT(T21, T22)) :-
+    thatteSubtype(T21, T11),
+    thatteSubtype(T12, T22).
     
+rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
 
+  rules // base values
 
+  thatteTypeOfExpr(s, Unit()) = (UnitC(), UnitT()).
+  
+  thatteTypeOfExpr(s, True()) = (TrueC(), BoolT()).
+  thatteTypeOfExpr(s, False()) = (FalseC(), BoolT()).
+  
+  rules // variables
+  
+  thatteTypeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
+    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  
+  rules // functions
+  
+  thatteTypeOfExpr(s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
+    new s_lam,
+    thatteTypeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+
+  // TODO: Oliart's type inference can guess types other than ?
+  thatteTypeOfExpr(s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
+    new s_lam,
+    thatteTypeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar DynT().
+  
+  
+  // TODO Ascr, If, Pair, Fst, Snd, Is*, Let, LetD, App, Ref, Deref, Set, Seq
+  
