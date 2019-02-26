@@ -392,6 +392,46 @@ rules thatteSubtype : Type * Type
     thatteSubtype(T21, T11),
     thatteSubtype(T12, T22).
     
+rules thatteLUB : Type * Type -> Type
+rules thatteGLB : Type * Type -> Type
+
+  thatteLUB(T, DynT()) = T.
+  thatteLUB(DynT(), T) = T.
+
+  thatteLUB(UnitT(), UnitT()) = UnitT().
+  thatteLUB(BoolT(), BoolT()) = BoolT().
+
+  thatteLUB(PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    thatteLUB(T11, T21) == T1,
+    thatteLUB(T12, T22) == T2.
+    
+  thatteLUB(FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    thatteGLB(T11,T21) == T1,
+    thatteLUB(T12,T22) == T2.
+    
+  thatteGLB(T, DynT()) = DynT().
+  thatteGLB(DynT(), T) = DynT().
+
+  thatteGLB(UnitT(), UnitT()) = UnitT().
+  thatteGLB(BoolT(), BoolT()) = BoolT().
+
+  thatteGLB(PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    thatteGLB(T11, T21) == T1,
+    thatteGLB(T12, T22) == T2.
+    
+  thatteGLB(FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    thatteLUB(T11,T21) == T1,
+    thatteGLB(T12,T22) == T2.
+  
+  // TODO what do to for refs? isovariant?
+  
+rules thatteCast : ExprC * Type * Type -> ExprC
+
+  thatteCast(e, T, T) = e.
+  
+  thatteCast(e, T1, T2) = CastC(CastC(e, T1, Tglb), Tglb, T2) :-
+    thatteGLB(T1, T2) == Tglb.
+  
 rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
 
   rules // base values
@@ -401,10 +441,25 @@ rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
   thatteTypeOfExpr(s, True()) = (TrueC(), BoolT()).
   thatteTypeOfExpr(s, False()) = (FalseC(), BoolT()).
   
-  rules // variables
+  rules // variables and binding
   
   thatteTypeOfExpr(s, Var(x)) = (VarC(x), T) :- {p d}
     typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  
+  thatteTypeOfExpr(s, Let(x, T, e1, e2)) = (LetC(x, T, cast(e1', T1, T), e2'), S) :- {s_let}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    consistent(T, T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T,
+    thatteTypeOfExpr(s_let, e2) == (e2', S).
+       
+  thatteTypeOfExpr(s, LetD(x, e1, e2)) = (LetC(x, T1, e1', e2'), S) :- {s_let}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T1,
+    thatteTypeOfExpr(s_let, e2) == (e2', S).
   
   rules // functions
   
@@ -421,6 +476,16 @@ rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
     s_lam -P-> s,
     s_lam -> Var{x@x} with typeOfVar DynT().
   
+  thatteTypeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    thatteTypeOfExpr(s, e2) == (e2', T2),
+    thatteApp(e1', e2', T1, T2) == (e, T).
+
+    rules thatteApp : ExprC * ExprC * Type * Type -> ExprC * Type
   
-  // TODO Ascr, If, Pair, Fst, Snd, Is*, Let, LetD, App, Ref, Deref, Set, Seq
+      thatteApp(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). 
+      
+      thatteApp(e1, e2, FunT(T1, T2), T3) = (AppC(e1, thatteCast(e2, T3, T1)), T2).
+  
+  // TODO Ascr, If, Pair, Fst, Snd, Is*, Ref, Deref, Set, Seq
   
