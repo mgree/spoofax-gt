@@ -460,6 +460,9 @@ rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
     s_let -P-> s,
     s_let -> Var{x@x} with typeOfVar T1,
     thatteTypeOfExpr(s_let, e2) == (e2', S).
+
+  thatteTypeOfExpr(s, Ascr(e,T)) = (thatteCast(e',T',T),T) :-
+    thatteTypeOfExpr(s, e) == (e',T').
   
   rules // functions
   
@@ -486,6 +489,57 @@ rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
       thatteApp(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). 
       
       thatteApp(e1, e2, FunT(T1, T2), T3) = (AppC(e1, thatteCast(e2, T3, T1)), T2).
+
+  rules // conditionals
+
+  thatteTypeOfExpr(s, If(e1,e2,e3)) = 
+    (IfC(cast(e1',T1,BoolT()),thatteCast(e2',T2,T),thatteCast(e3',T3,T)), T) 
+    :-
+  	  thatteTypeOfExpr(s, e1) == (e1', T1),
+  	  thatteTypeOfExpr(s, e2) == (e2', T2),
+  	  thatteTypeOfExpr(s, e3) == (e3', T3),
+  	  thatteLUB(T2, T3) == T.
+  	  
+  rules // pairs 
   
-  // TODO Ascr, If, Pair, Fst, Snd, Is*, Ref, Deref, Set, Seq
+  thatteTypeOfExpr(s, Pair(e1, e2)) = (PairC(e1', e2'), PairT(T1, T2)) :-
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    thatteTypeOfExpr(s, e2) == (e2', T2).
+  
+  thatteTypeOfExpr(s, Fst(e)) = (FstC(e''), T1) :- {e' T}
+    thatteTypeOfExpr(s, e) == (e', T),
+    thatteFst(e', T) == (e'', T1).
+    
+    rules thatteFst : ExprC * Type -> ExprC * Type
+      thatteFst(e, DynT()) = (thatteCast(e, DynT(), PairT(DynT(), DynT())), DynT()).
+      thatteFst(e, PairT(T1, T2)) = (e, T1).
+ 
+   thatteTypeOfExpr(s, Snd(e)) = (SndC(e''), T2) :- {e' T}
+    thatteTypeOfExpr(s, e) == (e', T),
+    thatteSnd(e', T) == (e'', T2).
+    
+    rules thatteSnd : ExprC * Type -> ExprC * Type
+      thatteSnd(e, DynT()) = (thatteCast(e, DynT(), PairT(DynT(), DynT())), DynT()).
+      thatteSnd(e, PairT(T1, T2)) = (e, T2).   
+
+  rules // predicates
+  
+  thatteTypeOfExpr(s, IsUnit(e)) = (IsUnitC(thatteCast(e', T, DynT())), BoolT()) :-
+    thatteTypeOfExpr(s, e) == (e', T).
+  thatteTypeOfExpr(s, IsBool(e)) = (IsBoolC(thatteCast(e', T, DynT())), BoolT()) :-
+    thatteTypeOfExpr(s, e) == (e', T).
+  thatteTypeOfExpr(s, IsPair(e)) = (IsPairC(thatteCast(e', T, DynT())), BoolT()) :-
+    thatteTypeOfExpr(s, e) == (e', T).
+  thatteTypeOfExpr(s, IsRef(e)) = (IsRefC(thatteCast(e', T, DynT())), BoolT()) :-
+    thatteTypeOfExpr(s, e) == (e', T).
+  thatteTypeOfExpr(s, IsFun(e)) = (IsFunC(thatteCast(e', T, DynT())), BoolT()) :-
+    thatteTypeOfExpr(s, e) == (e', T).
+    
+  rules // sequential composition
+  
+  thatteTypeOfExpr(s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
+    thatteTypeOfExpr(s, e1) == (e1', S),
+    thatteTypeOfExpr(s, e2) == (e2', T). 
+     	  
+  // TODO Ref, Deref, Set
   
