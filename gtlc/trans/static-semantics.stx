@@ -541,5 +541,24 @@ rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
     thatteTypeOfExpr(s, e1) == (e1', S),
     thatteTypeOfExpr(s, e2) == (e2', T). 
      	  
-  // TODO Ref, Deref, Set
+  rules // references
+  
+  thatteTypeOfExpr(s, Ref(e)) = (RefC(e'), RefT(T)) :- 
+    thatteTypeOfExpr(s, e) == (e', T).
+    
+  thatteTypeOfExpr(s, Deref(e)) = (DerefC(cast(e', T, RefT(S))), S) :-
+    thatteTypeOfExpr(s, e) == (e', T),
+    deref(T) == S. 
+       
+  // original rule returns the reference (?!) which is just ridiculous
+  thatteTypeOfExpr(s, Set(e1, e2)) = (SetC(e1'', e2''), UnitT()) :- {T1 T2 e1' e2'}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    thatteTypeOfExpr(s, e2) == (e2', T2),
+    thatteAssign(e1', T1, e2', T2, e1'', e2'').
+    
+    rules thatteAssign : ExprC * Type * ExprC * Type -> ExprC * ExprC
+      thatteAssign(e1', DynT(), e2', T) = (thatteCast(e1', DynT(), RefT(T)), e2'). // CAssign1
+        
+      thatteAssign(e1', RefT(T), e2', S) = (e1', thatteCast(e2', S, T)). // CAssign2 (when S!=T)/CAssign3   
+ 
   
