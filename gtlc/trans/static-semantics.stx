@@ -28,19 +28,25 @@ signature
 
 rules join : Mode * Type * Type -> Type
 
-  join(Thatte(), T, DynT()) = T.
-  join(Thatte(), DynT(), T) = T.
+  join(m, T, DynT()) = T.
+  join(m, DynT(), T) = T.
 
-  join(Thatte(), UnitT(), UnitT()) = UnitT().
-  join(Thatte(), BoolT(), BoolT()) = BoolT().
+  join(m, UnitT(), UnitT()) = UnitT().
+  join(m, BoolT(), BoolT()) = BoolT().
 
-  join(Thatte(), PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
-    join(Thatte(), T11, T21) == T1,
-    join(Thatte(), T12, T22) == T2.
-    
+  join(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    join(m, T11, T21) == T1,
+    join(m, T12, T22) == T2.
+
+  join(GT(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    join(GT(), T11,T21) == T1,
+    join(GT(), T12,T22) == T2.
+        
   join(Thatte(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
     meet(Thatte(), T11,T21) == T1,
     join(Thatte(), T12,T22) == T2.
+    
+  join(m, T1, T2) = DynT().
 
 rules meet : Mode * Type * Type -> Type
   
@@ -308,7 +314,7 @@ rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
   	  typeOfExpr(m, s, e1) == (e1', T1),
   	  typeOfExpr(m, s, e2) == (e2', T2),
   	  typeOfExpr(m, s, e3) == (e3', T3),
-  	  meet(m, T2, T3) == T.
+  	  join(m, T2, T3) == T.
   	 
   // pairs
 
