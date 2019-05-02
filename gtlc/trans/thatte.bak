@@ -1,0 +1,73 @@
+rules thatteSubtype : Type * Type
+
+  thatteSubtype(T, DynT()).
+  
+  thatteSubtype(FunT(T11,T12), FunT(T21, T22)) :-
+    thatteSubtype(T21, T11),
+    thatteSubtype(T12, T22).
+  
+rules thatteTypeOfExpr : scope * Expr -> ExprC * Type
+
+  rules // functions
+  
+  thatteTypeOfExpr(s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
+    new s_lam,
+    thatteTypeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+
+  // TODO: Oliart's type inference can guess types other than ?
+  thatteTypeOfExpr(s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
+    new s_lam,
+    thatteTypeOfExpr(s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar DynT().
+  
+  thatteTypeOfExpr(s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    thatteTypeOfExpr(s, e2) == (e2', T2),
+    thatteApp(e1', e2', T1, T2) == (e, T).
+
+    rules thatteApp : ExprC * ExprC * Type * Type -> ExprC * Type
+  
+      thatteApp(e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). 
+      
+      thatteApp(e1, e2, FunT(T1, T2), T3) = (AppC(e1, thatteCast(e2, T3, T1)), T2).
+
+  rules // conditionals
+
+  thatteTypeOfExpr(s, If(e1,e2,e3)) = 
+    (IfC(thatteCast(e1',T1,BoolT()),thatteCast(e2',T2,T),thatteCast(e3',T3,T)), T) 
+    :-
+  	  thatteTypeOfExpr(s, e1) == (e1', T1),
+  	  thatteTypeOfExpr(s, e2) == (e2', T2),
+  	  thatteTypeOfExpr(s, e3) == (e3', T3),
+  	  thatteLUB(T2, T3) == T.
+  	  
+
+    
+  rules // sequential composition
+  
+  thatteTypeOfExpr(s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
+    thatteTypeOfExpr(s, e1) == (e1', S),
+    thatteTypeOfExpr(s, e2) == (e2', T). 
+     	  
+  rules // references
+  
+  thatteTypeOfExpr(s, Ref(e)) = (RefC(e'), RefT(T)) :- 
+    thatteTypeOfExpr(s, e) == (e', T).
+    
+  thatteTypeOfExpr(s, Deref(e)) = (DerefC(thatteCast(e', T, RefT(S))), S) :-
+    thatteTypeOfExpr(s, e) == (e', T),
+    deref(T) == S. 
+       
+  // original rule returns the reference (?!) which is just ridiculous
+  thatteTypeOfExpr(s, Set(e1, e2)) = (SetC(e1'', e2''), UnitT()) :- {T1 T2 e1' e2'}
+    thatteTypeOfExpr(s, e1) == (e1', T1),
+    thatteTypeOfExpr(s, e2) == (e2', T2),
+    thatteAssign(e1', T1, e2', T2, e1'', e2'').
+    
+    rules thatteAssign : ExprC * Type * ExprC * Type -> ExprC * ExprC
+      thatteAssign(e1', DynT(), e2', T) = (thatteCast(e1', DynT(), RefT(T)), e2'). // CAssign1
+        
+      thatteAssign(e1', RefT(T), e2', S) = (e1', thatteCast(e2', S, T)). // CAssign2 (when S!=T)/CAssign3   

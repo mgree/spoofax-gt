@@ -1,10 +1,12 @@
 module gtlc-source
 
-imports Common types
+imports Common types gtlc-core
 
 sorts Expr context-free syntax
   
   Expr = <(<Expr>)> { bracket }
+  
+  Expr.Core = <core <ExprC>>
   
   Expr.Ascr = <<Expr> : <Type>>
 

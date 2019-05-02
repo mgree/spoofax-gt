@@ -7,36 +7,35 @@ context-free start-symbols Program
 sorts Program context-free syntax
     
   Program.Expr = 
-    <<Expr>>
+    <<ModedExpr>>
   
-  Program.ExprC = 
-    <core <ExprC>>
-
   Program.Elaborate = <
-    <Expr>
+    <ModedExpr>
     
     elaborate as
     
     <ExprC>
   >
   
-  Program.ExprCV = <
-   core 
-   
-     <ExprC>
-     
-   evaluates to
-   
-     <V>
-  >
-  
   Program.ExprV = <
-    <Expr>
+    <ModedExpr>
     
     evaluates to
     
       <V>
   >
+  
+sorts Mode context-free syntax
+  Mode.GT = <GT>
+  Mode.Thatte = <Thatte>
+  
+sorts ModedExpr context-free syntax
+
+  ModedExpr.Moded =
+    <using <Mode> <Expr>>
+    
+  ModedExpr.Default =
+    <<Expr>>
     
 template options
 
