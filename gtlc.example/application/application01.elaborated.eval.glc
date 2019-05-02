@@ -1,7 +1,0 @@
-core
-
-  (\x : ?. x) (true : bool => ?) : ?
-
-evaluates to
-
-  dyn true

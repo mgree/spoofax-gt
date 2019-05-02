@@ -1,7 +1,0 @@
-core
-
-  (\x : bool. x) true : bool
-
-evaluates to
-
-  true

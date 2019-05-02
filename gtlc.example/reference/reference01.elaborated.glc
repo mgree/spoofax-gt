@@ -1,9 +1,0 @@
-let x : ref bool = ref true
- in x := false;
- !x
-
-elaborate as
-
-let x : ref bool = ref true
- in x := false;
- !x : bool

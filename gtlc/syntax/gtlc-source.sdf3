@@ -6,7 +6,7 @@ sorts Expr context-free syntax
   
   Expr = <(<Expr>)> { bracket }
   
-  Expr.Core = <core <ExprC>>
+  Expr.Core = <core { <ExprC> }>
   
   Expr.Ascr = <<Expr> : <Type>>
 
@@ -89,6 +89,7 @@ context-free priorities
   > {Expr.LamD Expr.Lam}
   > {Expr.Let Expr.LetD}
   > Expr.Ascr
+  > Expr.Core
   
 template options
 

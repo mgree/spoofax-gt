@@ -1,8 +1,0 @@
-core
-
-  let f : ? -> ? = \x : ?. x
-   in fst (f ((true, false) : (bool, bool) => ?) : ? => (?, ?)) : ?
-
-evaluates to
-
-  dyn true

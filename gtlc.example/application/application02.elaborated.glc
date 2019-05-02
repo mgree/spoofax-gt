@@ -1,5 +1,0 @@
-(\x. x) true : bool
-
-elaborate as
-
-(\x : ?. x) (true : bool => ?) : ? => bool : bool

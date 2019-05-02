@@ -1,1 +1,0 @@
-Expr(App(LamD("x", Var("x")), True()))
