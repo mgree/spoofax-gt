@@ -1,0 +1,3 @@
+let f = \x:bool. if x then unit else true in
+let use = \y:bool. if y then (f true; y) else f y in
+use true

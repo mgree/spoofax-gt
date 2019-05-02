@@ -17,21 +17,10 @@ rules // eval programs
   eval :
     p@ExprV(e, _) -> v
     where debug(!"eval: ")
-    where <insertCasts; strip-annos <+ debug(!"insertCasts failed: "); fail> p => p'
-        ; <eval> p' => v
+    where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v
        
-  eval :
-    ExprC(e) -> ExprCV(e, v)
-    where debug(!"eval: ")
-    where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v 
-       
-  eval :
-    ExprCV(e, _) -> ExprCV(e, v)
-    where debug(!"eval: ")
-    where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e => v 
-
   eval : 
-    Elaborate(e1, e2) -> ExprCV(e2, v)
+    Elaborate(_, e2) -> ExprV(e2, v)
     where debug(!"eval: ")
     where <eval(|[]) <+ Exc <+ debug(!"evaluation failed: ")> e2 => v 
     

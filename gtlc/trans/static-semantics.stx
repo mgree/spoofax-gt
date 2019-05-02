@@ -6,7 +6,7 @@ signature
   sorts Program constructors
     Expr      : ModedExpr -> Program
     Elaborate : ModedExpr * ExprC -> Program
-    ExprV     : ModedExpr * V -> Program
+    ExprV     : ExprC * V -> Program
 
   sorts Mode constructors
     GT      : Mode
@@ -28,8 +28,8 @@ signature
 
 rules join : Mode * Type * Type -> Type
 
-  join(m, T, DynT()) = T.
-  join(m, DynT(), T) = T.
+  join(m, T, DynT()) = DynT().
+  join(m, DynT(), T) = DynT().
 
   join(m, UnitT(), UnitT()) = UnitT().
   join(m, BoolT(), BoolT()) = BoolT().
@@ -54,9 +54,9 @@ rules meet : Mode * Type * Type -> Type
   
   meet(m, BoolT(), BoolT()) = BoolT().
   
-  meet(m, DynT(), T) = DynT().
+  meet(m, DynT(), T) = T.
   
-  meet(m, T, DynT()) = DynT().
+  meet(m, T, DynT()) = T.
   
   meet(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
     meet(m, T11, T21) == T1,
@@ -263,8 +263,9 @@ rules programOK : Program // elaboration
     typeOfExpr(m, s1, e1) == (e2, T),
     typeOfExprC(s2, e2) == T.
   
-  programOK(ExprV(me, v)) :- {m e}
-    programOK(Expr(me)).
+  programOK(ExprV(ec, v)) :- {s T}
+    new s,
+    typeOfExprC(s, ec) == T. // TODO check the value is well typed?
 
 rules insertCasts : Program -> Program
   
@@ -273,10 +274,9 @@ rules insertCasts : Program -> Program
     new s,
     typeOfExpr(m, s, e1) == (e2, T).
   
-  insertCasts(ExprV(me1, v)) = Elaborate(Moded(m, e1), AscrC(e2, T)) :- {s}
-    modeAndExpr(me1) == (m,e1),
+  insertCasts(ExprV(ec, v)) = ExprV(ec, v) :- {s T}
     new s,
-    typeOfExpr(m, s, e1) == (e2, T).
+    typeOfExprC(s, ec) == T.
   
   insertCasts(Elaborate(me1, _)) = Elaborate(Moded(m, e1), AscrC(e2, T)) :- {s}
     modeAndExpr(me1) == (m,e1),
@@ -285,7 +285,8 @@ rules insertCasts : Program -> Program
 
 rules cast : Mode * ExprC * Type * Type -> ExprC
   
-  cast(m, e, T, T) = e.
+  cast(GT(), e, T, T) = e.
+  cast(Thatte(), e, T, T) = e.
 
   cast(GT(), e, T1, T2) = CastC(e, T1, T2) :- consistent(T1, T2).
 

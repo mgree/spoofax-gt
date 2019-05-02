@@ -18,7 +18,7 @@ sorts Program context-free syntax
   >
   
   Program.ExprV = <
-    <ModedExpr>
+    <ExprC>
     
     evaluates to
     
