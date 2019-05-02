@@ -1,8 +1,0 @@
-let f = \x . x
- in fst f (true, false) 
- 
- // parsed as 
- 
- // (fst f) (true, false) 
- 
- 
