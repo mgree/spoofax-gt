@@ -4,6 +4,7 @@ imports
   signatures/-
   analysis
   statixruntime
+  statix/api
   pp
   desugar
 
