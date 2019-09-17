@@ -23,8 +23,7 @@ language:
     placeholder:
       prefix: "$"
   stratego:
-    build: incremental
-    format: jar
+    format: ctree
     args:
     - -la
     - stratego-lib
