@@ -244,7 +244,7 @@ signature // source
     
     resolve Var filter pathMatch[P*] min pathLt[$ < P]
   
-rules modeAndExpr : ModedExpr -> Mode * Expr
+rules modeAndExpr : ModedExpr -> (Mode * Expr)
 
   modeAndExpr(Moded(m,e)) = (m,e).
   
@@ -293,7 +293,7 @@ rules cast : Mode * ExprC * Type * Type -> ExprC
   cast(Thatte(), e, T1, T2) = CastC(CastC(e, T1, Tglb), Tglb, T2) :-
     meet(Thatte(), T1, T2) == Tglb.
   
-rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
+rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
 
   typeOfExpr(m, s, Core(ec)) = (ec,T) :-
     typeOfExprC(s, ec) == T.
@@ -327,7 +327,7 @@ rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
     typeOfExpr(m, s, e) == (e', T),
     fst(m, e', T) == (e'', T1).
     
-    rules fst : Mode * ExprC * Type -> ExprC * Type
+    rules fst : Mode * ExprC * Type -> (ExprC * Type)
       fst(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
       fst(m, e, PairT(T1, T2)) = (e, T1).
  
@@ -335,7 +335,7 @@ rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
     typeOfExpr(m, s, e) == (e', T),
     snd(m, e', T) == (e'', T2).
     
-    rules snd : Mode * ExprC * Type -> ExprC * Type
+    rules snd : Mode * ExprC * Type -> (ExprC * Type)
       snd(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
       snd(m, e, PairT(T1, T2)) = (e, T2).   
 
@@ -389,7 +389,7 @@ rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
     typeOfExpr(m, s, e2) == (e2', T2),
     app(m, e1', e2', T1, T2) == (e, T).
 
-    rules app : Mode * ExprC * ExprC * Type * Type -> ExprC * Type
+    rules app : Mode * ExprC * ExprC * Type * Type -> (ExprC * Type)
   
       app(m, e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). // CApp1
       
@@ -416,7 +416,7 @@ rules typeOfExpr : Mode * scope * Expr -> ExprC * Type
     typeOfExpr(m, s, e2) == (e2', T2),
     assign(m, e1', T1, e2', T2) == (e1'', e2'').
     
-    rules assign : Mode * ExprC * Type * ExprC * Type -> ExprC * ExprC
+    rules assign : Mode * ExprC * Type * ExprC * Type -> (ExprC * ExprC)
       assign(m, e1', DynT(), e2', T) = (cast(m, e1', DynT(), RefT(T)), e2'). // CAssign1
         
       assign(m, e1', RefT(T), e2', S) = (e1', cast(m, e2', S, T)). // CAssign2 (when S!=T)/CAssign3   
