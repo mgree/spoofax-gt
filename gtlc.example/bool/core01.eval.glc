@@ -1,6 +1,8 @@
-core
+core {
 
   true
+
+}
 
 evaluates to
 
