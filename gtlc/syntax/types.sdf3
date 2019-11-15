@@ -10,6 +10,8 @@ sorts Type context-free syntax
 
   Type.BoolT = <bool>
   
+  Type.IntT = <int>
+  
   Type.PairT = <(<Type>, <Type>)>
   
   Type.DynT  = <?>

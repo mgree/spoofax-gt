@@ -1,0 +1,31 @@
+let nil = unit in
+let cons = (\h. \t. (h, t)) in
+
+let f21_1 = 0 in
+let f21_2 = 2 in
+let f21_3 = nil in
+let f21_4 = cons f21_1 f21_3 in
+let f21_5 = cons f21_2 f21_4 i in
+
+f21_5
+
+/*
+
+let error : ?->? = λdummy. (λx. ¬x) 5 in
+
+// Fagan does them as 'selectors', i.e., names for extracting particular fields from constructors
+let fagan21_pred = λn:FaganZ.
+     match n with | Suc(m) -> m | Z() -> error n
+in
+let fagan21_hd = λl:FaganZList.
+  match l with
+  | ZCons(hd,tl) -> hd
+  | ZNil() -> error l
+in
+let fagan21_tl = λl:FaganZList.
+  match l with
+  | ZCons(hd,tl) -> tl
+  | ZNil() -> error l
+in
+
+*/

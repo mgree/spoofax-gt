@@ -25,6 +25,10 @@ sorts Expr context-free syntax
       <Expr>
   >
   
+  // numbers
+  
+  Expr.Int = <<INT>>
+  
   // pairs
 
   Expr.Pair = <(<Expr>, <Expr>)>

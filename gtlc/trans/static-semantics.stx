@@ -21,6 +21,7 @@ signature
   sorts Type constructors
     UnitT : Type
 	BoolT : Type
+	IntT : Type
 	PairT : Type * Type -> Type
 	DynT  : Type
 	FunT  : Type * Type -> Type  
@@ -33,6 +34,7 @@ rules join : Mode * Type * Type -> Type
 
   join(m, UnitT(), UnitT()) = UnitT().
   join(m, BoolT(), BoolT()) = BoolT().
+  join(m, IntT(), IntT()) = IntT().
 
   join(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
     join(m, T11, T21) == T1,
@@ -51,8 +53,8 @@ rules join : Mode * Type * Type -> Type
 rules meet : Mode * Type * Type -> Type
   
   meet(m, UnitT(), UnitT()) = UnitT().
-  
   meet(m, BoolT(), BoolT()) = BoolT().
+  meet(m, IntT(), IntT()) = IntT().
   
   meet(m, DynT(), T) = T.
   
@@ -80,9 +82,9 @@ rules consistent : Type * Type
 //  consistent(T1, T2) :- {S} meet(T1, T2) == S.
   
   consistent(UnitT(), UnitT()).
-    
   consistent(BoolT(), BoolT()).
-  
+  consistent(IntT(), IntT()).
+    
   consistent(DynT(), T).
   
   consistent(T, DynT()).
@@ -106,6 +108,7 @@ signature // core
     UnitC   : ExprC
     TrueC   : ExprC
     FalseC  : ExprC
+    IntC    : int -> ExprC
     PairC   : ExprC * ExprC -> ExprC   
     FstC    : ExprC -> ExprC
     SndC    : ExprC -> ExprC 
@@ -142,6 +145,8 @@ rules // booleans
   	typeOfExprC(s, e1) == BoolT(),
   	typeOfExprC(s, e2) == T,
   	typeOfExprC(s, e3) == T.
+  
+  typeOfExprC(s, IntC(n)) = IntT().
   
   // pairs 
   
@@ -214,6 +219,7 @@ signature // source
     Unit   : Expr
     True   : Expr
     False  : Expr
+    Int    : int -> Expr
     Pair   : Expr * Expr -> Expr
     Fst    : Expr -> Expr
     Snd    : Expr -> Expr
@@ -316,6 +322,8 @@ rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
   	  typeOfExpr(m, s, e2) == (e2', T2),
   	  typeOfExpr(m, s, e3) == (e3', T3),
   	  join(m, T2, T3) == T.
+
+  typeOfExpr(m, s, Int(n)) = (IntC(n), IntT()).
   	 
   // pairs
 

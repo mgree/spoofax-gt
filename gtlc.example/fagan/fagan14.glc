@@ -1,0 +1,6 @@
+let nil = unit in
+let cons = \h. \t. (h, t) in
+
+let f = \x. cons 1 x in
+let arg = cons true (cons false nil) in
+f arg

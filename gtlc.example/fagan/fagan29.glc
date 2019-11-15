@@ -1,0 +1,12 @@
+let and = \b1:bool. \b2:bool. if b1 then b2 else false in
+let or = \b1:bool. \b2:bool. if b1 then true else b2 in
+let not = \b:bool. if b then false else true in
+
+let Y = \f. (\x. f (x x)) (\x. \y. (f x x) y) in
+
+let taut = Y (\taut. \p.
+	if isbool p
+	then p
+	else and (taut (p true)) (taut (p false))) in
+	
+taut (\b. or b (not b))	

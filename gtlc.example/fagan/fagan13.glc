@@ -1,0 +1,4 @@
+let nil = unit in
+let cons = \h. \t. (h, t) in
+
+(\x:bool. if x then 1 else nil)

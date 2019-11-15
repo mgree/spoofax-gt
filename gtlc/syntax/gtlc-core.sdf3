@@ -45,6 +45,10 @@ context-free syntax
   ExprC.IsRefC  = <isref <ExprC>>
   ExprC.IsFunC  = <isfun <ExprC>>
   
+  // numbers
+  
+  ExprC.IntC = <<INT>>
+  
   // references
   
   ExprC.RefC  = <ref <ExprC>>

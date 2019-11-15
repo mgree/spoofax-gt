@@ -138,6 +138,10 @@ rules // eval expressions
     where debug(!"eval: ")
 
   eval(|E) :
+    IntC(n) -> IntV(n)
+    where debug(!"eval: ")
+
+  eval(|E) :
     PairC(e1, e2) -> PairV(v1, v2)
     where debug(!"eval: ")
         ; <eval(|E)> e1 => v1

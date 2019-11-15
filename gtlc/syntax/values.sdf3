@@ -13,6 +13,7 @@ sorts V context-free syntax
 
   V.UnitV     = <unit>
   V.BoolV     = <<Bool>>
+  V.IntV      = [int [INT]]
   V.PairV     = <(<V>, <V>)>
   V.FunV      = <fun(<ID>, <ExprC>, [<Env>])>
   V.FunProxyV = [[V] : [Type] -> [Type] => [Type] -> [Type]]
