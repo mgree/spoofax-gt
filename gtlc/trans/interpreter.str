@@ -119,9 +119,9 @@ rules // casting
   // cast fails 
   
   castc(|E) : 
-    (v, T1, T2) -> <fail>
+    (v, T1, T2) -> <fail>()
     where debug(!"castc fails: ")
-    where rules( Exc: _ -> BlameV(<double-quote>"error", v, T1, T2) ) 
+    where rules( Exc: _ -> BlameV(<double-quote>"error", v, T1, T2) )
         
 rules // eval expressions
  
@@ -142,19 +142,19 @@ rules // eval expressions
     where debug(!"eval: ")
 
   eval(|E) :
-    PlusC(e1, e2) -> IntV(n1 + n2)
+    PlusC(e1, e2) -> IntV(<addS>(n1, n2))
     where debug(!"eval: ")
     	; <eval(|E)> e1 => IntV(n1)
     	; <eval(|E)> e2 => IntV(n2)
 
   eval(|E) :
-    MinusC(e1, e2) -> IntV(n1 - n2)
+    MinusC(e1, e2) -> IntV(<subtS>(n1, n2))
     where debug(!"eval: ")
     	; <eval(|E)> e1 => IntV(n1)
     	; <eval(|E)> e2 => IntV(n2)
 
   eval(|E) :
-    EqC(e1, e2) -> BoolV(n1 == n2)
+    EqC(e1, e2) -> BoolV(<eq>(n1, n2))
     where debug(!"eval: ")
     	; <eval(|E)> e1 => IntV(n1)
     	; <eval(|E)> e2 => IntV(n2)
