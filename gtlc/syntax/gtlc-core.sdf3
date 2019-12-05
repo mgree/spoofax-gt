@@ -50,9 +50,9 @@ context-free syntax
   ExprC.IntC = <<INT>>
   
   // arithmetic
-  ExprC.PlusC = <<ExprC> + <ExprC>>
-  ExprC.MinusC = <<ExprC> - <ExprC>>
-  ExprC.EqC = <<ExprC> == <ExprC>>
+  ExprC.PlusC = <<ExprC> + <ExprC>> {left}
+  ExprC.MinusC = <<ExprC> - <ExprC>> {left}
+  ExprC.EqC = <<ExprC> == <ExprC>> {non-assoc}
   
   // references
   
@@ -73,7 +73,9 @@ context-free priorities
     ExprC.IsBoolC ExprC.IsPairC 
     ExprC.IsRefC ExprC.IsFunC
     ExprC.RefC ExprC.DerefC}
-  > ExprC.AppC 
+  > ExprC.AppC
+  > {left: ExprC.PlusC ExprC.MinusC}
+  > ExprC.EqC
   > ExprC.SetC
   > ExprC.IfC
   > ExprC.SeqC  
