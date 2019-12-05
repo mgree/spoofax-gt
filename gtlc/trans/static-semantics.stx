@@ -161,7 +161,7 @@ rules // numbers and arithmetic
     typeOfExprC(s, e1) == IntT(),
     typeOfExprC(s, e2) == IntT().
 
-  typeOfExprC(s, EqC(e1,e2)) = T :-
+  typeOfExprC(s, EqC(e1,e2)) = BoolT() :- {T}
     typeOfExprC(s, e1) == T,
     typeOfExprC(s, e2) == T.
 
