@@ -49,6 +49,11 @@ context-free syntax
   
   ExprC.IntC = <<INT>>
   
+  // arithmetic
+  ExprC.PlusC = <<ExprC> + <ExprC>>
+  ExprC.MinusC = <<ExprC> - <ExprC>>
+  ExprC.EqC = <<ExprC> == <ExprC>>
+  
   // references
   
   ExprC.RefC  = <ref <ExprC>>

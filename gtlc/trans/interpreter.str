@@ -142,6 +142,25 @@ rules // eval expressions
     where debug(!"eval: ")
 
   eval(|E) :
+    PlusC(e1, e2) -> IntV(n1 + n2)
+    where debug(!"eval: ")
+    	; <eval(|E)> e1 => IntV(n1)
+    	; <eval(|E)> e2 => IntV(n2)
+
+  eval(|E) :
+    MinusC(e1, e2) -> IntV(n1 - n2)
+    where debug(!"eval: ")
+    	; <eval(|E)> e1 => IntV(n1)
+    	; <eval(|E)> e2 => IntV(n2)
+
+  eval(|E) :
+    EqC(e1, e2) -> BoolV(n1 == n2)
+    where debug(!"eval: ")
+    	; <eval(|E)> e1 => IntV(n1)
+    	; <eval(|E)> e2 => IntV(n2)
+
+
+  eval(|E) :
     PairC(e1, e2) -> PairV(v1, v2)
     where debug(!"eval: ")
         ; <eval(|E)> e1 => v1

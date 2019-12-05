@@ -29,6 +29,11 @@ sorts Expr context-free syntax
   
   Expr.Int = <<INT>>
   
+  // arithmetic
+  Expr.Plus = <<Expr> + <Expr>> { left }
+  Expr.Minus = <<Expr> - <Expr>> { left }
+  Expr.Eq = <<Expr> == <Expr>> { non-assoc }
+  
   // pairs
 
   Expr.Pair = <(<Expr>, <Expr>)>
@@ -86,7 +91,9 @@ context-free priorities
     Expr.IsBool Expr.IsPair 
     Expr.IsRef Expr.IsFun
     Expr.Ref Expr.Deref}
+  > {Expr.Plus Expr.Minus}
   > Expr.App
+  > Expr.Eq
   > Expr.Set
   > Expr.If
   > Expr.Seq

@@ -109,6 +109,9 @@ signature // core
     TrueC   : ExprC
     FalseC  : ExprC
     IntC    : int -> ExprC
+    PlusC   : ExprC * ExprC -> ExprC
+    MinusC  : ExprC * ExprC -> ExprC
+    EqC     : ExprC * ExprC -> ExprC
     PairC   : ExprC * ExprC -> ExprC   
     FstC    : ExprC -> ExprC
     SndC    : ExprC -> ExprC 
@@ -145,10 +148,25 @@ rules // booleans
   	typeOfExprC(s, e1) == BoolT(),
   	typeOfExprC(s, e2) == T,
   	typeOfExprC(s, e3) == T.
+
+rules // numbers and arithmetic
   
   typeOfExprC(s, IntC(n)) = IntT().
-  
-  // pairs 
+
+  typeOfExprC(s, PlusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, MinusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, EqC(e1,e2)) = T :-
+    typeOfExprC(s, e1) == T,
+    typeOfExprC(s, e2) == T.
+
+
+rules // pairs 
   
   typeOfExprC(s, PairC(e1, e2)) = PairT(T1, T2) :-
     typeOfExprC(s, e1) == T1,
@@ -220,6 +238,9 @@ signature // source
     True   : Expr
     False  : Expr
     Int    : int -> Expr
+    Plus   : Expr * Expr -> Expr
+    Minus  : Expr * Expr -> Expr
+    Eq     : Expr * Expr -> Expr    
     Pair   : Expr * Expr -> Expr
     Fst    : Expr -> Expr
     Snd    : Expr -> Expr
@@ -323,7 +344,32 @@ rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
   	  typeOfExpr(m, s, e3) == (e3', T3),
   	  join(m, T2, T3) == T.
 
+  // numbers
+
   typeOfExpr(m, s, Int(n)) = (IntC(n), IntT()).
+
+  typeOfExpr(m, s, Plus(e1,e2)) = 
+    (PlusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, IntT()),
+    consistent(T2, IntT()).
+
+  typeOfExpr(m, s, Minus(e1,e2)) = 
+    (MinusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, IntT()),
+    consistent(T2, IntT()).
+
+  typeOfExpr(m, s, Eq(e1,e2)) = 
+    (EqC(e1',cast(m,e2',T2,T1)), BoolT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, T2).
   	 
   // pairs
 
