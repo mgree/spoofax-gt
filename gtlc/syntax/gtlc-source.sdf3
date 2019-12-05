@@ -42,6 +42,7 @@ sorts Expr context-free syntax
   Expr.Snd    = <snd <Expr>>
   Expr.IsUnit = <isunit <Expr>>
   Expr.IsBool = <isbool <Expr>>
+  Expr.IsInt  = <isint <Expr>>
   Expr.IsPair = <ispair <Expr>>
   Expr.IsRef  = <isref <Expr>>
   Expr.IsFun  = <isfun <Expr>>
@@ -88,7 +89,7 @@ sorts Expr context-free syntax
 context-free priorities
 
    {Expr.Fst Expr.Snd Expr.IsUnit 
-    Expr.IsBool Expr.IsPair 
+    Expr.IsBool Expr.IsPair Expr.IsInt
     Expr.IsRef Expr.IsFun
     Expr.Ref Expr.Deref}
   > Expr.App

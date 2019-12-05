@@ -117,6 +117,7 @@ signature // core
     SndC    : ExprC -> ExprC 
     IsUnitC : ExprC -> ExprC
     IsBoolC : ExprC -> ExprC
+    IsIntC  : ExprC -> ExprC
     IsPairC : ExprC -> ExprC
     IsRefC  : ExprC -> ExprC
     IsFunC  : ExprC -> ExprC
@@ -182,6 +183,8 @@ rules // pairs
     typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsBoolC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsIntC(e)) = IntT() :-
+    typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsPairC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsRefC(e)) = BoolT() :-
@@ -246,6 +249,7 @@ signature // source
     Snd    : Expr -> Expr
     IsUnit : Expr -> Expr
     IsBool : Expr -> Expr
+    IsInt  : Expr -> Expr
     IsPair : Expr -> Expr
     IsRef  : Expr -> Expr
     IsFun  : Expr -> Expr
@@ -396,6 +400,8 @@ rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
   typeOfExpr(m, s, IsUnit(e)) = (IsUnitC(cast(m, e', T, DynT())), BoolT()) :-
     typeOfExpr(m, s, e) == (e', T).
   typeOfExpr(m, s, IsBool(e)) = (IsBoolC(cast(m, e', T, DynT())), BoolT()) :-
+    typeOfExpr(m, s, e) == (e', T).
+  typeOfExpr(m, s, IsInt(e)) = (IsIntC(cast(m, e', T, DynT())), BoolT()) :-
     typeOfExpr(m, s, e) == (e', T).
   typeOfExpr(m, s, IsPair(e)) = (IsPairC(cast(m, e', T, DynT())), BoolT()) :-
     typeOfExpr(m, s, e) == (e', T).

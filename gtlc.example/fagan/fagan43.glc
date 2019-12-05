@@ -1,7 +1,7 @@
 // should be equivalent to fagan41?
 
 let error = \x:unit. if 5 then true else false in
-let c1 = \v. if isint v then v else error unit in
+let c1 = \v. if isint v then v else error unit in 
 let c2 = \v. if isbool v then v else error unit in
 
-\f. if c2 (f true) then c1 (f 5) + c1 (f 7) else f 7
+\f. if c2 (f true) then c1 (f 5) + c1 (f 7) else f 7 

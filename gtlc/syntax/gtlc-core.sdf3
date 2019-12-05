@@ -41,6 +41,7 @@ context-free syntax
   ExprC.SndC    = <snd <ExprC>>
   ExprC.IsUnitC = <isunit <ExprC>>
   ExprC.IsBoolC = <isbool <ExprC>>
+  ExprC.IsIntC  = <isint <ExprC>>
   ExprC.IsPairC = <ispair <ExprC>>
   ExprC.IsRefC  = <isref <ExprC>>
   ExprC.IsFunC  = <isfun <ExprC>>
@@ -70,7 +71,7 @@ context-free syntax
 context-free priorities
     
    {ExprC.FstC ExprC.SndC ExprC.IsUnitC 
-    ExprC.IsBoolC ExprC.IsPairC 
+    ExprC.IsBoolC ExprC.IsPairC ExprC.IsIntC
     ExprC.IsRefC ExprC.IsFunC
     ExprC.RefC ExprC.DerefC}
   > ExprC.AppC
