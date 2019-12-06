@@ -213,8 +213,8 @@ rules // bindings
     s_let -> Var{x@x} with typeOfVar T1,
     typeOfExprC(s_let, e2) == T2.
 
-  typeOfExprC(s, VarC(x)) = T :- {p d}
-    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  typeOfExprC(s, VarC(x)) = T :- {p d y} @x.ref := y,
+    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
     
 rules // references
     
@@ -412,8 +412,8 @@ rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
         
   // bindings
         
-  typeOfExpr(m, s, Var(x)) = (VarC(x), T) :- {p d}
-    typeOfVar of Var{x@x} in s |-> [(p, (d, T))].
+  typeOfExpr(m, s, Var(x)) = (VarC(x), T) :- {p d y} @x.ref := y,
+    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
 
   typeOfExpr(m, s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
     new s_lam,
