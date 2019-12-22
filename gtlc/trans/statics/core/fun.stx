@@ -18,7 +18,7 @@ signature
     
   namespaces
     Var : string
-    
+     
   name-resolution
     labels P
     
