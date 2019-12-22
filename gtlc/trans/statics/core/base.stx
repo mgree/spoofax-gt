@@ -1,0 +1,6 @@
+module statics/core/base
+
+signature
+  sorts ID = string
+  sorts Type 
+  sorts ExprC 

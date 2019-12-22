@@ -1,0 +1,89 @@
+module statics/source/fun
+
+imports statics/core/stlc
+imports statics/source/base
+imports statics/mode
+imports statics/core/dyn
+
+signature
+  constructors
+    Var    : ID -> Expr
+    App    : Expr * Expr -> Expr
+	Lam    : ID * Type * Expr -> Expr
+	LamD   : ID * Expr -> Expr
+	Let    : ID * Type * Expr * Expr -> Expr
+	LetD   : ID * Expr * Expr -> Expr
+	 
+rules
+
+  typeOfExpr(m, s, Var(x)) = (VarC(x), T) :- {p d y} @x.ref := y,
+    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
+
+  typeOfExpr(m, s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
+    new s_lam,
+    typeOfExpr(m, s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+    
+  typeOfExpr(m, s, Let(x, T, e1, e2)) = (LetC(x, T, cast(m, e1', T1, T), e2'), S) :- {s_let}
+    typeOfExpr(m, s, e1) == (e1', T1),
+    consistent(T, T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T,
+    typeOfExpr(m, s_let, e2) == (e2', S).
+       
+  typeOfExpr(m, s, LetD(x, e1, e2)) = (LetC(x, T1, e1', e2'), S) :- {s_let}
+    typeOfExpr(m, s, e1) == (e1', T1),
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T1,
+    typeOfExpr(m, s_let, e2) == (e2', S).
+
+  // functions
+
+  typeOfExpr(m, s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
+    new s_lam,
+    typeOfExpr(m, s_lam, e) == (e', T2),
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar DynT().
+    
+  typeOfExpr(m, s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    app(m, e1', e2', T1, T2) == (e, T).
+
+rules 
+
+   app : Mode * ExprC * ExprC * Type * Type -> (ExprC * Type)
+  
+   app(m, e1, e2, DynT(), T) 
+     = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). // CApp1
+      
+   app(m, e1, e2, FunT(T1, T2), T1') 
+     = (AppC(e1, cast(m, e2, T1', T1)), T2)  // CApp2 (when T1' != T1)/ CApp3
+     :- consistent(T1', T1).
+     
+rules // join
+
+  join(GT(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    join(GT(), T11,T21) == T1,
+    join(GT(), T12,T22) == T2.
+        
+  join(Thatte(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    meet(Thatte(), T11,T21) == T1,
+    join(Thatte(), T12,T22) == T2.
+
+  meet(GT(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    meet(GT(), T11,T21) == T1,
+    meet(GT(), T12,T22) == T2.
+
+  meet(Thatte(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
+    join(Thatte(),T11,T21) == T1,
+    meet(Thatte(),T12,T22) == T2.
+    
+  consistent(FunT(T11,T12), FunT(T21,T22)) :-
+    consistent(T11,T21),
+    consistent(T12,T22).
+
+     

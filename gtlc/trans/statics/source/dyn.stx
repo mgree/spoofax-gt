@@ -1,0 +1,18 @@
+module statics/source/dyn
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/dyn
+
+rules
+
+  join(m, T1, T2) = DynT().
+  
+  join(m, T, DynT()) = DynT().
+  join(m, DynT(), T) = DynT().
+  
+  meet(m, DynT(), T) = T.
+  meet(m, T, DynT()) = T.
+
+  consistent(DynT(), T).
+  consistent(T, DynT()).

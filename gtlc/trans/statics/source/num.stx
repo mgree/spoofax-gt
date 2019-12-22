@@ -1,0 +1,47 @@
+module statics/source/num
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/num
+
+signature 
+  constructors  
+    Int    : int -> Expr
+    Plus   : Expr * Expr -> Expr
+    Minus  : Expr * Expr -> Expr
+    Eq     : Expr * Expr -> Expr  
+
+rules
+
+  typeOfExpr(m, s, Int(n)) = (IntC(n), IntT()).
+
+  typeOfExpr(m, s, Plus(e1,e2)) = 
+    (PlusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, IntT()),
+    consistent(T2, IntT()).
+
+  typeOfExpr(m, s, Minus(e1,e2)) = 
+    (MinusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, IntT()),
+    consistent(T2, IntT()).
+
+  typeOfExpr(m, s, Eq(e1,e2)) = 
+    (EqC(e1',cast(m,e2',T2,T1)), BoolT())
+    :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    consistent(T1, T2).
+    
+rules
+
+  join(m, IntT(), IntT()) = IntT().
+
+  consistent(IntT(), IntT()).
+  
+  meet(m, IntT(), IntT()) = IntT().

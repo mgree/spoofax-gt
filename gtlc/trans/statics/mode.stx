@@ -1,0 +1,33 @@
+module statics/mode
+
+imports statics/core/base
+imports statics/source/base
+imports statics/core/cast
+
+signature
+  sorts Mode 
+  constructors
+    GT      : Mode
+    Thatte  : Mode
+
+rules
+
+  join : Mode * Type * Type -> Type
+    
+  meet : Mode * Type * Type -> Type
+    
+  consistent : Type * Type
+  
+rules 
+
+  cast : Mode * ExprC * Type * Type -> ExprC
+  
+  cast(GT(), e, T, T) = e.
+  
+  cast(Thatte(), e, T, T) = e.
+
+  cast(GT(), e, T1, T2) = CastC(e, T1, T2) :- 
+    consistent(T1, T2).
+
+  cast(Thatte(), e, T1, T2) = CastC(CastC(e, T1, Tglb), Tglb, T2) :-
+    meet(Thatte(), T1, T2) == Tglb.

@@ -1,0 +1,14 @@
+module statics/source/ascr
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/ascr
+
+signature 
+  constructors
+	Ascr : Expr * Type -> Expr
+  
+rules
+
+  typeOfExpr(m, s, Ascr(e,T)) = (cast(m, e',T',T),T) :-
+    typeOfExpr(m, s, e) == (e',T').

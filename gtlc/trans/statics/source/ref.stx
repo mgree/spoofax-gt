@@ -1,0 +1,61 @@
+module statics/source/ref
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/ref
+
+signature 
+  constructors
+	Ref    : Expr -> Expr
+	Deref  : Expr -> Expr
+	Set    : Expr * Expr -> Expr
+	Seq    : Expr * Expr -> Expr
+    
+rules
+
+  typeOfExpr(m, s, Ref(e)) = (RefC(e'), RefT(T)) :- 
+    typeOfExpr(m, s, e) == (e', T).
+    
+  typeOfExpr(m, s, Deref(e)) = (DerefC(cast(m, e', T, RefT(S))), S) :-
+    typeOfExpr(m, s, e) == (e', T),
+    deref(T) == S. 
+      
+  // original rule returns the reference (?!) which is just ridiculous
+  typeOfExpr(m, s, Set(e1, e2)) = (SetC(e1'', e2''), UnitT()) :- {T1 T2 e1' e2'}
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2),
+    assign(m, e1', T1, e2', T2) == (e1'', e2'').
+    
+  // sequential composition
+  
+  typeOfExpr(m, s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
+    typeOfExpr(m, s, e1) == (e1', S),
+    typeOfExpr(m, s, e2) == (e2', T).
+    
+rules
+
+  deref : Type -> Type   
+  
+  deref(DynT()) = DynT(). // CDeref1
+      
+  deref(RefT(T)) = T. // CDeref2
+  
+  
+rules 
+
+  assign : Mode * ExprC * Type * ExprC * Type -> (ExprC * ExprC)
+      
+  assign(m, e1', DynT(), e2', T) = (cast(m, e1', DynT(), RefT(T)), e2'). // CAssign1
+        
+  assign(m, e1', RefT(T), e2', S) = (e1', cast(m, e2', S, T)). // CAssign2 (when S!=T)/CAssign3   
+     
+rules
+
+  consistent(RefT(T1), RefT(T2)) :-
+    consistent(T1, T2).
+    
+  meet(GT(), RefT(T1), RefT(T2)) = RefT(S) :-
+  meet(GT(), T1, T2) == S. // check // the rules here are tricky... see https://link.springer.com/chapter/10.1007/978-3-662-46669-8_18 
+
+  // TODO Thatte semantics for refs? (isovariant?!)
+    

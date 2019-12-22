@@ -1,0 +1,23 @@
+module statics/source/ref
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/unit
+
+signature 
+  constructors
+    Unit : Expr
+  
+rules
+
+  typeOfExpr(m, s, Unit()) = (UnitC(), UnitT()).
+  
+rules 
+
+  join(m, UnitT(), UnitT()) = UnitT().
+  
+  consistent(UnitT(), UnitT()).
+  
+  meet(m, UnitT(), UnitT()) = UnitT().
+  
+  

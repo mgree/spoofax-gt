@@ -1,0 +1,32 @@
+module statics/source/bool
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/bool
+
+signature 
+  constructors
+    True   : Expr
+    False  : Expr
+    If     : Expr * Expr * Expr -> Expr
+  
+rules
+
+  typeOfExpr(m, s, True()) = (TrueC(), BoolT()).
+  
+  typeOfExpr(m, s, False()) = (FalseC(), BoolT()).
+ 
+  typeOfExpr(m, s, If(e1,e2,e3)) 
+    =  (IfC(cast(m, e1',T1,BoolT()), cast(m,e2',T2,T), cast(m,e3',T3,T)), T) 
+    :- typeOfExpr(m, s, e1) == (e1', T1),
+  	   typeOfExpr(m, s, e2) == (e2', T2),
+  	   typeOfExpr(m, s, e3) == (e3', T3),
+  	   join(m, T2, T3) == T.
+  	  
+rules
+
+  join(m, BoolT(), BoolT()) = BoolT().
+
+  consistent(BoolT(), BoolT()).
+  
+  meet(m, BoolT(), BoolT()) = BoolT().

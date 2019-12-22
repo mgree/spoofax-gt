@@ -1,6 +1,7 @@
 module static-semantics
 
-imports statics/core/stlc
+imports statics/core/base
+imports statics/core/fun
 imports statics/core/bool 
 imports statics/core/unit 
 imports statics/core/num
@@ -10,6 +11,19 @@ imports statics/core/cast
 imports statics/core/dyn
 imports statics/core/ascr
 
+imports statics/source/base
+imports statics/source/fun
+imports statics/source/bool 
+imports statics/source/unit 
+imports statics/source/num
+imports statics/source/pair
+imports statics/source/ref
+imports statics/source/cast
+imports statics/source/dyn
+imports statics/source/ascr
+
+imports statics/mode
+
 signature
   
   sorts Program constructors
@@ -17,89 +31,14 @@ signature
     Elaborate : ModedExpr * ExprC -> Program
     ExprV     : ExprC * V -> Program
 
-  sorts Mode constructors
-    GT      : Mode
-    Thatte  : Mode
-  
   sorts ModedExpr constructors
     Moded   : Mode * Expr -> ModedExpr
     Default :        Expr -> ModedExpr
    
   sorts V  
 
-rules join : Mode * Type * Type -> Type
-
-  join(m, T, DynT()) = DynT().
-  join(m, DynT(), T) = DynT().
-
-  join(m, UnitT(), UnitT()) = UnitT().
-  join(m, BoolT(), BoolT()) = BoolT().
-  join(m, IntT(), IntT()) = IntT().
- 
-  join(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
-    join(m, T11, T21) == T1,
-    join(m, T12, T22) == T2.
-
-  join(GT(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
-    join(GT(), T11,T21) == T1,
-    join(GT(), T12,T22) == T2.
-        
-  join(Thatte(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
-    meet(Thatte(), T11,T21) == T1,
-    join(Thatte(), T12,T22) == T2.
-    
-  join(m, T1, T2) = DynT().
-
-rules meet : Mode * Type * Type -> Type
-  
-  meet(m, UnitT(), UnitT()) = UnitT().
-  meet(m, BoolT(), BoolT()) = BoolT().
-  meet(m, IntT(), IntT()) = IntT().
-  
-  meet(m, DynT(), T) = T.
-  
-  meet(m, T, DynT()) = T.
-  
-  meet(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
-    meet(m, T11, T21) == T1,
-    meet(m, T12, T22) == T2.
-  
-  meet(GT(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
-    meet(GT(), T11,T21) == T1,
-    meet(GT(), T12,T22) == T2.
-
-  meet(Thatte(), FunT(T11,T12), FunT(T21,T22)) = FunT(T1, T2) :-
-    join(Thatte(),T11,T21) == T1,
-    meet(Thatte(),T12,T22) == T2.
-    
-  meet(GT(), RefT(T1), RefT(T2)) = RefT(S) :-
-    meet(GT(), T1, T2) == S. // check // the rules here are tricky... see https://link.springer.com/chapter/10.1007/978-3-662-46669-8_18 
-
-  // TODO Thatte semantics for refs? (isovariant?!)
-    
-rules consistent : Type * Type
-
 //  consistent(T1, T2) :- {S} meet(T1, T2) == S.
   
-  consistent(UnitT(), UnitT()).
-  consistent(BoolT(), BoolT()).
-  consistent(IntT(), IntT()).
-    
-  consistent(DynT(), T).
-  
-  consistent(T, DynT()).
-  
-  consistent(PairT(T11, T12), PairT(T21, T22)) :-
-    consistent(T11,T21),
-    consistent(T12,T22).
-  
-  consistent(FunT(T11,T12), FunT(T21,T22)) :-
-    consistent(T11,T21),
-    consistent(T12,T22).
-    
-  consistent(RefT(T1), RefT(T2)) :-
-    consistent(T1, T2).
-    
 signature // core
   constructors
     IsUnitC : ExprC -> ExprC
@@ -111,44 +50,31 @@ rules // type reflection
   
   typeOfExprC(s, IsUnitC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
+    
   typeOfExprC(s, IsBoolC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
+    
   typeOfExprC(s, IsIntC(e)) = IntT() :-
     typeOfExprC(s, e) == DynT().
+    
   typeOfExprC(s, IsRefC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
+    
   typeOfExprC(s, IsFunC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
+    
   typeOfExprC(s, IsPairC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
     
-
-
 signature // source
   sorts Expr constructors
     Core   : ExprC -> Expr
-	Ascr   : Expr * Type -> Expr
-    Unit   : Expr
-    True   : Expr
-    False  : Expr
-    Int    : int -> Expr
-    Plus   : Expr * Expr -> Expr
-    Minus  : Expr * Expr -> Expr
-    Eq     : Expr * Expr -> Expr    
-    Pair   : Expr * Expr -> Expr
-    Fst    : Expr -> Expr
-    Snd    : Expr -> Expr
     IsUnit : Expr -> Expr
     IsBool : Expr -> Expr
     IsInt  : Expr -> Expr
     IsPair : Expr -> Expr
     IsRef  : Expr -> Expr
     IsFun  : Expr -> Expr
-    If     : Expr * Expr * Expr -> Expr
-	Ref    : Expr -> Expr
-	Deref  : Expr -> Expr
-	Set    : Expr * Expr -> Expr
-	Seq    : Expr * Expr -> Expr
 	
 rules modeAndExpr : ModedExpr -> (Mode * Expr)
 
@@ -189,89 +115,13 @@ rules insertCasts : Program -> Program
     new s,
     typeOfExpr(m, s, e1) == (e2, T).
 
-rules cast : Mode * ExprC * Type * Type -> ExprC
-  
-  cast(GT(), e, T, T) = e.
-  cast(Thatte(), e, T, T) = e.
-
-  cast(GT(), e, T1, T2) = CastC(e, T1, T2) :- consistent(T1, T2).
-
-  cast(Thatte(), e, T1, T2) = CastC(CastC(e, T1, Tglb), Tglb, T2) :-
-    meet(Thatte(), T1, T2) == Tglb.
-  
-rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
+rules 
 
   typeOfExpr(m, s, Core(ec)) = (ec,T) :-
     typeOfExprC(s, ec) == T.
 
-  typeOfExpr(m, s, Ascr(e,T)) = (cast(m, e',T',T),T) :-
-    typeOfExpr(m, s, e) == (e',T').
+rules
   
-  typeOfExpr(m, s, Unit()) = (UnitC(), UnitT()).
-  
-  // booleans
-  
-  typeOfExpr(m, s, True()) = (TrueC(), BoolT()).
-  
-  typeOfExpr(m, s, False()) = (FalseC(), BoolT()).
- 
-  typeOfExpr(m, s, If(e1,e2,e3)) = 
-    (IfC(cast(m, e1',T1,BoolT()),cast(m,e2',T2,T),cast(m,e3',T3,T)), T) 
-    :-
-  	  typeOfExpr(m, s, e1) == (e1', T1),
-  	  typeOfExpr(m, s, e2) == (e2', T2),
-  	  typeOfExpr(m, s, e3) == (e3', T3),
-  	  join(m, T2, T3) == T.
-
-  // numbers
-
-  typeOfExpr(m, s, Int(n)) = (IntC(n), IntT()).
-
-  typeOfExpr(m, s, Plus(e1,e2)) = 
-    (PlusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
-    :-
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2),
-    consistent(T1, IntT()),
-    consistent(T2, IntT()).
-
-  typeOfExpr(m, s, Minus(e1,e2)) = 
-    (MinusC(cast(m,e1',T1,IntT()),cast(m,e2',T2,IntT())), IntT())
-    :-
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2),
-    consistent(T1, IntT()),
-    consistent(T2, IntT()).
-
-  typeOfExpr(m, s, Eq(e1,e2)) = 
-    (EqC(e1',cast(m,e2',T2,T1)), BoolT())
-    :-
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2),
-    consistent(T1, T2).
-  	 
-  // pairs
-
-  typeOfExpr(m, s, Pair(e1, e2)) = (PairC(e1', e2'), PairT(T1, T2)) :-
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2).
-  
-  typeOfExpr(m, s, Fst(e)) = (FstC(e''), T1) :- {e' T}
-    typeOfExpr(m, s, e) == (e', T),
-    fst(m, e', T) == (e'', T1).
-    
-    rules fst : Mode * ExprC * Type -> (ExprC * Type)
-      fst(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
-      fst(m, e, PairT(T1, T2)) = (e, T1).
- 
-   typeOfExpr(m, s, Snd(e)) = (SndC(e''), T2) :- {e' T}
-    typeOfExpr(m, s, e) == (e', T),
-    snd(m, e', T) == (e'', T2).
-    
-    rules snd : Mode * ExprC * Type -> (ExprC * Type)
-      snd(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
-      snd(m, e, PairT(T1, T2)) = (e, T2).   
-
   typeOfExpr(m, s, IsUnit(e)) = (IsUnitC(cast(m, e', T, DynT())), BoolT()) :-
     typeOfExpr(m, s, e) == (e', T).
   typeOfExpr(m, s, IsBool(e)) = (IsBoolC(cast(m, e', T, DynT())), BoolT()) :-
@@ -284,80 +134,5 @@ rules typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
     typeOfExpr(m, s, e) == (e', T).
   typeOfExpr(m, s, IsFun(e)) = (IsFunC(cast(m, e', T, DynT())), BoolT()) :-
     typeOfExpr(m, s, e) == (e', T).
-        
-  // bindings
-        
-  typeOfExpr(m, s, Var(x)) = (VarC(x), T) :- {p d y} @x.ref := y,
-    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
-
-  typeOfExpr(m, s, Lam(x, T1, e)) = (LamC(x,T1,e'), FunT(T1,T2)) :- {s_lam}
-    new s_lam,
-    typeOfExpr(m, s_lam, e) == (e', T2),
-    s_lam -P-> s,
-    s_lam -> Var{x@x} with typeOfVar T1.
-    
-  typeOfExpr(m, s, Let(x, T, e1, e2)) = (LetC(x, T, cast(m, e1', T1, T), e2'), S) :- {s_let}
-    typeOfExpr(m, s, e1) == (e1', T1),
-    consistent(T, T1),
-    new s_let,
-    s_let -P-> s,
-    s_let -> Var{x@x} with typeOfVar T,
-    typeOfExpr(m, s_let, e2) == (e2', S).
-       
-  typeOfExpr(m, s, LetD(x, e1, e2)) = (LetC(x, T1, e1', e2'), S) :- {s_let}
-    typeOfExpr(m, s, e1) == (e1', T1),
-    new s_let,
-    s_let -P-> s,
-    s_let -> Var{x@x} with typeOfVar T1,
-    typeOfExpr(m, s_let, e2) == (e2', S).
-
-  // functions
-
-  typeOfExpr(m, s, LamD(x, e)) = (LamC(x, DynT(), e'), FunT(DynT(), T2)) :- {s_lam}
-    new s_lam,
-    typeOfExpr(m, s_lam, e) == (e', T2),
-    s_lam -P-> s,
-    s_lam -> Var{x@x} with typeOfVar DynT().
-    
-  typeOfExpr(m, s, App(e1,e2)) = (e,T) :- {e1' e2' T1 T2}
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2),
-    app(m, e1', e2', T1, T2) == (e, T).
-
-    rules app : Mode * ExprC * ExprC * Type * Type -> (ExprC * Type)
-  
-      app(m, e1, e2, DynT(), T) = (AppC(CastC(e1, DynT(), FunT(T, DynT())), e2), DynT()). // CApp1
-      
-      app(m, e1, e2, FunT(T1, T2), T1') = (AppC(e1, cast(m, e2, T1', T1)), T2) :- // CApp2 (when T1' != T1)/ CApp3
-        consistent(T1', T1).
-    
-  // references
-  
-  typeOfExpr(m, s, Ref(e)) = (RefC(e'), RefT(T)) :- 
-    typeOfExpr(m, s, e) == (e', T).
-    
-  typeOfExpr(m, s, Deref(e)) = (DerefC(cast(m, e', T, RefT(S))), S) :-
-    typeOfExpr(m, s, e) == (e', T),
-    deref(T) == S. 
-    
-    rules deref : Type -> Type   
-      deref(DynT()) = DynT(). // CDeref1
-      
-      deref(RefT(T)) = T. // CDeref2
-   
-  // original rule returns the reference (?!) which is just ridiculous
-  typeOfExpr(m, s, Set(e1, e2)) = (SetC(e1'', e2''), UnitT()) :- {T1 T2 e1' e2'}
-    typeOfExpr(m, s, e1) == (e1', T1),
-    typeOfExpr(m, s, e2) == (e2', T2),
-    assign(m, e1', T1, e2', T2) == (e1'', e2'').
-    
-    rules assign : Mode * ExprC * Type * ExprC * Type -> (ExprC * ExprC)
-      assign(m, e1', DynT(), e2', T) = (cast(m, e1', DynT(), RefT(T)), e2'). // CAssign1
-        
-      assign(m, e1', RefT(T), e2', S) = (e1', cast(m, e2', S, T)). // CAssign2 (when S!=T)/CAssign3   
-     
-  // sequential composition
-  
-  typeOfExpr(m, s, Seq(e1, e2)) = (SeqC(e1', e2'), T) :- {S}
-    typeOfExpr(m, s, e1) == (e1', S),
-    typeOfExpr(m, s, e2) == (e2', T). 
+                
+ 

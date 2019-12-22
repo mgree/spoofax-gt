@@ -1,0 +1,54 @@
+module statics/source/pair
+
+imports statics/mode
+imports statics/source/base
+imports statics/core/pair
+
+signature 
+  constructors  
+    Pair : Expr * Expr -> Expr
+    Fst  : Expr -> Expr
+    Snd  : Expr -> Expr
+    
+rules 
+
+  typeOfExpr(m, s, Pair(e1, e2)) = (PairC(e1', e2'), PairT(T1, T2)) :-
+    typeOfExpr(m, s, e1) == (e1', T1),
+    typeOfExpr(m, s, e2) == (e2', T2).
+  
+  typeOfExpr(m, s, Fst(e)) = (FstC(e''), T1) :- {e' T}
+    typeOfExpr(m, s, e) == (e', T),
+    fst(m, e', T) == (e'', T1).
+    
+
+ 
+   typeOfExpr(m, s, Snd(e)) = (SndC(e''), T2) :- {e' T}
+    typeOfExpr(m, s, e) == (e', T),
+    snd(m, e', T) == (e'', T2).
+
+rules 
+
+  fst : Mode * ExprC * Type -> (ExprC * Type)
+  fst(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
+  fst(m, e, PairT(T1, T2)) = (e, T1).
+
+  snd : Mode * ExprC * Type -> (ExprC * Type)     
+  snd(m, e, DynT()) = (cast(m, e, DynT(), PairT(DynT(), DynT())), DynT()).
+  snd(m, e, PairT(T1, T2)) = (e, T2).   
+
+rules
+
+  join(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    join(m, T11, T21) == T1,
+    join(m, T12, T22) == T2.
+
+  meet(m, PairT(T11, T12), PairT(T21, T22)) = PairT(T1, T2) :-
+    meet(m, T11, T21) == T1,
+    meet(m, T12, T22) == T2.
+
+  consistent(PairT(T11, T12), PairT(T21, T22)) :-
+    consistent(T11,T21),
+    consistent(T12,T22).
+
+
+

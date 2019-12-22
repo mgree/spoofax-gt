@@ -1,0 +1,12 @@
+module statics/source/base
+
+imports statics/mode
+imports statics/core/base
+
+signature
+  sorts Expr 
+  
+rules
+    
+  typeOfExpr : Mode * scope * Expr -> (ExprC * Type)
+    
