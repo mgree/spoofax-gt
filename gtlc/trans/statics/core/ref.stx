@@ -1,0 +1,28 @@
+module statics/core/ref
+
+imports statics/core/stlc
+imports statics/core/unit
+
+signature
+  constructors
+	RefT  : Type -> Type
+	RefC    : ExprC -> ExprC
+	DerefC  : ExprC -> ExprC
+	SetC    : ExprC * ExprC -> ExprC
+	SeqC    : ExprC * ExprC -> ExprC
+	
+rules // references
+    
+  typeOfExprC(s, RefC(e)) = RefT(T) :- 
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, DerefC(e)) = T :-
+    typeOfExprC(s, e) == RefT(T).
+   
+   typeOfExprC(s, SetC(e1, e2)) = UnitT() :- {T}
+     typeOfExprC(s, e1) == RefT(T),
+     typeOfExprC(s, e2) == T.
+     
+   typeOfExprC(s, SeqC(e1, e2)) = T :- {S}
+     typeOfExprC(s, e1) == S,
+     typeOfExprC(s, e2) == T.

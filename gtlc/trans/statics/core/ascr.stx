@@ -1,0 +1,12 @@
+module statics/core/ascr
+
+imports statics/core/stlc
+
+signature
+  constructors
+	AscrC   : ExprC * Type -> ExprC
+	
+rules 
+
+  typeOfExprC(s, AscrC(e, T)) = T :-
+    typeOfExprC(s, e) == T.

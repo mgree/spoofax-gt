@@ -1,0 +1,7 @@
+module statics/core/dyn
+
+imports statics/core/stlc
+
+signature
+  constructors
+	DynT : Type 

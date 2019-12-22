@@ -1,0 +1,50 @@
+module statics/core/stlc
+ 
+signature
+  sorts ID = string
+  
+  sorts Type 
+  constructors
+	FunT  : Type * Type -> Type  
+    
+  sorts ExprC 
+  constructors 
+    VarC : ID -> ExprC
+    AppC : ExprC * ExprC -> ExprC
+	LamC : ID * Type * ExprC -> ExprC
+	LetC : ID * Type * ExprC * ExprC -> ExprC
+	
+  relations  
+    typeOfVar : occurrence -> Type
+    
+  namespaces
+    Var : string
+    
+  name-resolution
+    labels P
+    
+    resolve Var filter pathMatch[P*] min pathLt[$ < P]
+    
+rules typeOfExprC : scope * ExprC -> Type    
+
+rules // functions
+
+  typeOfExprC(s, AppC(e1,e2)) = T2 :- {T1}
+    typeOfExprC(s, e1) == FunT(T1,T2),
+    typeOfExprC(s, e2) == T1.
+
+  typeOfExprC(s, LamC(x,T1,e)) = FunT(T1,T2) :- {s_lam}
+    new s_lam,
+    typeOfExprC(s_lam, e) == T2,
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+  
+  typeOfExprC(s, VarC(x)) = T :- {p d y} @x.ref := y,
+    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
+    
+  typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
+    typeOfExprC(s, e1) == T1,
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T1,
+    typeOfExprC(s_let, e2) == T2.

@@ -1,0 +1,25 @@
+module statics/core/pair
+
+imports statics/core/stlc
+imports statics/core/bool
+
+signature
+  constructors
+	PairT   : Type * Type -> Type
+    PairC   : ExprC * ExprC -> ExprC 
+    FstC    : ExprC -> ExprC
+    SndC    : ExprC -> ExprC   
+    IsPairC : ExprC -> ExprC
+    
+rules // pairs 
+  
+  typeOfExprC(s, PairC(e1, e2)) = PairT(T1, T2) :-
+    typeOfExprC(s, e1) == T1,
+    typeOfExprC(s, e2) == T2.
+    
+  typeOfExprC(s, FstC(e)) = T1 :- {T2}
+    typeOfExprC(s, e) == PairT(T1, T2).
+
+  typeOfExprC(s, SndC(e)) = T2 :- {T1}
+    typeOfExprC(s, e) == PairT(T1, T2).
+

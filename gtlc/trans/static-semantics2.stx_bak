@@ -1,16 +1,9 @@
 module static-semantics
 
-imports statics/core/stlc
-imports statics/core/bool 
-imports statics/core/unit 
-imports statics/core/num
-imports statics/core/pair
-imports statics/core/ref
-imports statics/core/cast
-imports statics/core/dyn
-imports statics/core/ascr
+imports statics/base
 
 signature
+  sorts ID = string
   
   sorts Program constructors
     Expr      : ModedExpr -> Program
@@ -24,8 +17,17 @@ signature
   sorts ModedExpr constructors
     Moded   : Mode * Expr -> ModedExpr
     Default :        Expr -> ModedExpr
-   
+  
   sorts V  
+  
+  sorts Type constructors
+    UnitT : Type
+	BoolT : Type
+	IntT : Type
+	PairT : Type * Type -> Type
+	DynT  : Type
+	FunT  : Type * Type -> Type  
+	RefT  : Type -> Type
 
 rules join : Mode * Type * Type -> Type
 
@@ -101,13 +103,83 @@ rules consistent : Type * Type
     consistent(T1, T2).
     
 signature // core
-  constructors
+  sorts ExprC constructors
+	AscrC   : ExprC * Type -> ExprC
+	CastC   : ExprC * Type * Type -> ExprC
+    VarC    : ID -> ExprC
+    UnitC   : ExprC
+    TrueC   : ExprC
+    FalseC  : ExprC
+    IntC    : int -> ExprC
+    PlusC   : ExprC * ExprC -> ExprC
+    MinusC  : ExprC * ExprC -> ExprC
+    EqC     : ExprC * ExprC -> ExprC
+    PairC   : ExprC * ExprC -> ExprC   
+    FstC    : ExprC -> ExprC
+    SndC    : ExprC -> ExprC 
     IsUnitC : ExprC -> ExprC
+    IsBoolC : ExprC -> ExprC
     IsIntC  : ExprC -> ExprC
+    IsPairC : ExprC -> ExprC
     IsRefC  : ExprC -> ExprC
     IsFunC  : ExprC -> ExprC
+    IfC     : ExprC * ExprC * ExprC -> ExprC
+    AppC    : ExprC * ExprC -> ExprC
+	LamC    : ID * Type * ExprC -> ExprC
+	RefC    : ExprC -> ExprC
+	DerefC  : ExprC -> ExprC
+	SetC    : ExprC * ExprC -> ExprC
+	SeqC    : ExprC * ExprC -> ExprC
+	LetC    : ID * Type * ExprC * ExprC -> ExprC
+      
+rules typeOfExprC : scope * ExprC -> Type    
+  typeOfExprC(s, AscrC(e,T)) = T :-
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, CastC(e,T1,T2)) = T2 :-
+    typeOfExprC(s, e) == T1.
+  
+  typeOfExprC(s, UnitC()) = UnitT().
+  
+rules // booleans
+  
+  typeOfExprC(s, TrueC()) = BoolT().
+  
+  typeOfExprC(s, FalseC()) = BoolT().
+  
+  typeOfExprC(s, IfC(e1,e2,e3)) = T :-
+  	typeOfExprC(s, e1) == BoolT(),
+  	typeOfExprC(s, e2) == T,
+  	typeOfExprC(s, e3) == T.
 
-rules // type reflection
+rules // numbers and arithmetic
+  
+  typeOfExprC(s, IntC(n)) = IntT().
+
+  typeOfExprC(s, PlusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, MinusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, EqC(e1,e2)) = BoolT() :- {T}
+    typeOfExprC(s, e1) == T,
+    typeOfExprC(s, e2) == T.
+
+
+rules // pairs 
+  
+  typeOfExprC(s, PairC(e1, e2)) = PairT(T1, T2) :-
+    typeOfExprC(s, e1) == T1,
+    typeOfExprC(s, e2) == T2.
+    
+  typeOfExprC(s, FstC(e)) = T1 :- {T2}
+    typeOfExprC(s, e) == PairT(T1, T2).
+
+  typeOfExprC(s, SndC(e)) = T2 :- {T1}
+    typeOfExprC(s, e) == PairT(T1, T2).
   
   typeOfExprC(s, IsUnitC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
@@ -115,19 +187,58 @@ rules // type reflection
     typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsIntC(e)) = IntT() :-
     typeOfExprC(s, e) == DynT().
+  typeOfExprC(s, IsPairC(e)) = BoolT() :-
+    typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsRefC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
   typeOfExprC(s, IsFunC(e)) = BoolT() :-
     typeOfExprC(s, e) == DynT().
-  typeOfExprC(s, IsPairC(e)) = BoolT() :-
-    typeOfExprC(s, e) == DynT().
     
+rules // functions
 
+  typeOfExprC(s, AppC(e1,e2)) = T2 :- {T1}
+    typeOfExprC(s, e1) == FunT(T1,T2),
+    typeOfExprC(s, e2) == T1.
+
+  typeOfExprC(s, LamC(x,T1,e)) = FunT(T1,T2) :- {s_lam}
+    new s_lam,
+    typeOfExprC(s_lam, e) == T2,
+    s_lam -P-> s,
+    s_lam -> Var{x@x} with typeOfVar T1.
+  
+rules // bindings
+     
+   typeOfExprC(s, LetC(x, T1, e1, e2)) = T2 :- {s_let}
+    typeOfExprC(s, e1) == T1,
+    new s_let,
+    s_let -P-> s,
+    s_let -> Var{x@x} with typeOfVar T1,
+    typeOfExprC(s_let, e2) == T2.
+
+  typeOfExprC(s, VarC(x)) = T :- {p d y} @x.ref := y,
+    typeOfVar of Var{x@x} in s |-> [(p, (d@Var{y@_}, T))].
+    
+rules // references
+    
+  typeOfExprC(s, RefC(e)) = RefT(T) :- 
+    typeOfExprC(s, e) == T.
+    
+  typeOfExprC(s, DerefC(e)) = T :-
+    typeOfExprC(s, e) == RefT(T).
+   
+   typeOfExprC(s, SetC(e1, e2)) = UnitT() :- {T}
+     typeOfExprC(s, e1) == RefT(T),
+     typeOfExprC(s, e2) == T.
+     
+   typeOfExprC(s, SeqC(e1, e2)) = T :- {S}
+     typeOfExprC(s, e1) == S,
+     typeOfExprC(s, e2) == T.
 
 signature // source
   sorts Expr constructors
     Core   : ExprC -> Expr
 	Ascr   : Expr * Type -> Expr
+    Var    : ID -> Expr
     Unit   : Expr
     True   : Expr
     False  : Expr
@@ -145,11 +256,27 @@ signature // source
     IsRef  : Expr -> Expr
     IsFun  : Expr -> Expr
     If     : Expr * Expr * Expr -> Expr
+    App    : Expr * Expr -> Expr
+	Lam    : ID * Type * Expr -> Expr
+	LamD   : ID * Expr -> Expr
+	Let    : ID * Type * Expr * Expr -> Expr
+	LetD   : ID * Expr * Expr -> Expr
 	Ref    : Expr -> Expr
 	Deref  : Expr -> Expr
 	Set    : Expr * Expr -> Expr
 	Seq    : Expr * Expr -> Expr
 	
+  namespaces
+    Var : string
+	
+  relations  
+    typeOfVar : occurrence -> Type
+
+  name-resolution
+    labels P
+    
+    resolve Var filter pathMatch[P*] min pathLt[$ < P]
+  
 rules modeAndExpr : ModedExpr -> (Mode * Expr)
 
   modeAndExpr(Moded(m,e)) = (m,e).

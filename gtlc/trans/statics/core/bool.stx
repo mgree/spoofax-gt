@@ -1,0 +1,22 @@
+module statics/core/bool 
+
+imports statics/core/stlc
+
+signature
+  constructors
+	BoolT   : Type
+    TrueC   : ExprC
+    FalseC  : ExprC
+    IsBoolC : ExprC -> ExprC
+    IfC     : ExprC * ExprC * ExprC -> ExprC
+
+rules // booleans
+  
+  typeOfExprC(s, TrueC()) = BoolT().
+  
+  typeOfExprC(s, FalseC()) = BoolT().
+  
+  typeOfExprC(s, IfC(e1,e2,e3)) = T :-
+  	typeOfExprC(s, e1) == BoolT(),
+  	typeOfExprC(s, e2) == T,
+  	typeOfExprC(s, e3) == T.

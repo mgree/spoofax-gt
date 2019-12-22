@@ -1,0 +1,29 @@
+module statics/core/num
+
+imports statics/core/stlc
+imports statics/core/bool
+
+signature
+  constructors
+	IntT   : Type
+    IntC   : int -> ExprC
+    PlusC  : ExprC * ExprC -> ExprC
+    MinusC : ExprC * ExprC -> ExprC
+    EqC    : ExprC * ExprC -> ExprC
+  
+rules // numbers and arithmetic
+  
+  typeOfExprC(s, IntC(n)) = IntT().
+
+  typeOfExprC(s, PlusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, MinusC(e1,e2)) = IntT() :-
+    typeOfExprC(s, e1) == IntT(),
+    typeOfExprC(s, e2) == IntT().
+
+  typeOfExprC(s, EqC(e1,e2)) = BoolT() :- {T}
+    typeOfExprC(s, e1) == T,
+    typeOfExprC(s, e2) == T.
+ 

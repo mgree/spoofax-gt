@@ -1,0 +1,14 @@
+module statics/core/unit 
+
+imports statics/core/stlc
+
+signature 
+  constructors
+    UnitC : ExprC
+    UnitT : Type
+    
+rules
+
+  typeOfExprC(s, UnitC()) = UnitT().
+  
+  

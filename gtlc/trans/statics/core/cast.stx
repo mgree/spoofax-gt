@@ -1,0 +1,13 @@
+module statics/core/cast
+
+imports statics/core/stlc
+
+signature
+  constructors
+	CastC : ExprC * Type * Type -> ExprC
+	
+rules 
+    
+  typeOfExprC(s, CastC(e, T1, T2)) = T2 :-
+    typeOfExprC(s, e) == T1.
+ 

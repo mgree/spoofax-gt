@@ -1,0 +1,13 @@
+module statics/source/gtlc
+
+imports statics/core/stlc
+
+signature
+  sorts Expr 
+  constructors
+    Var    : ID -> Expr
+    App    : Expr * Expr -> Expr
+	Lam    : ID * Type * Expr -> Expr
+	LamD   : ID * Expr -> Expr
+	Let    : ID * Type * Expr * Expr -> Expr
+	LetD   : ID * Expr * Expr -> Expr
